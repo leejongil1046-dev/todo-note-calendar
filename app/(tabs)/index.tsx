@@ -1,98 +1,111 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import React, { useState } from "react";
+import { StyleSheet, View } from "react-native";
+import { Calendar } from "react-native-calendars";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+type Todo = {
+  id: string;
+  text: string;
+  done: boolean;
+};
 
-export default function HomeScreen() {
+type TodosByDate = {
+  [date: string]: Todo[];
+};
+
+export default function TodoCalendarScreen() {
+  const today = new Date().toISOString().slice(0, 10); // 'YYYY-MM-DD'
+  const [selectedDate, setSelectedDate] = useState(today);
+  const [todosByDate, setTodosByDate] = useState<TodosByDate>({});
+  const [input, setInput] = useState("");
+
+  const todos = todosByDate[selectedDate] ?? [];
+
+  const addTodo = () => {
+    if (!input.trim()) return;
+    const newTodo: Todo = {
+      id: Date.now().toString(),
+      text: input.trim(),
+      done: false,
+    };
+    setTodosByDate((prev) => ({
+      ...prev,
+      [selectedDate]: [...(prev[selectedDate] ?? []), newTodo],
+    }));
+    setInput("");
+  };
+
+  const toggleTodo = (id: string) => {
+    setTodosByDate((prev) => ({
+      ...prev,
+      [selectedDate]: (prev[selectedDate] ?? []).map((t) =>
+        t.id === id ? { ...t, done: !t.done } : t,
+      ),
+    }));
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
+    <SafeAreaView style={styles.safeArea} edges={["top"]}>
+      <View style={styles.container}>
+        <Calendar
+          onDayPress={(day) => setSelectedDate(day.dateString)}
+          markedDates={{
+            [selectedDate]: { selected: true, selectedColor: "#3b82f6" },
+          }}
         />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+        {/* <View style={styles.todoContainer}>
+        <Text style={styles.dateTitle}>{selectedDate}의 할 일</Text>
+
+        <View style={styles.inputRow}>
+          <TextInput
+            style={styles.input}
+            placeholder="할 일을 입력하세요"
+            value={input}
+            onChangeText={setInput}
+          />
+          <Button title="추가" onPress={addTodo} />
+        </View>
+
+        <FlatList
+          data={todos}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              onPress={() => toggleTodo(item.id)}
+              style={styles.todoItem}
+            >
+              <Text style={[styles.todoText, item.done && styles.todoDone]}>
+                {item.text}
+              </Text>
+            </TouchableOpacity>
+          )}
+          ListEmptyComponent={
+            <Text style={styles.emptyText}>아직 할 일이 없습니다.</Text>
+          }
+        />
+      </View> */}
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  safeArea: { flex: 1, backgroundColor: "white" },
+  container: { flex: 1 },
+  todoContainer: { flex: 1, padding: 16 },
+  dateTitle: { fontSize: 18, fontWeight: "600", marginBottom: 12 },
+  inputRow: { flexDirection: "row", gap: 8, marginBottom: 12 },
+  input: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
+  todoItem: { paddingVertical: 8 },
+  todoText: { fontSize: 16 },
+  todoDone: { textDecorationLine: "line-through", color: "#9ca3af" },
+  emptyText: { color: "#9ca3af" },
 });
