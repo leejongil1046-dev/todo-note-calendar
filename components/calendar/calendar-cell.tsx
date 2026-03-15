@@ -73,6 +73,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginTop: 3,
+    paddingBottom: 0.5,
   },
   selectedSundayBadge: { backgroundColor: "#DC2626" },
   selectedWeekDayBadge: { backgroundColor: "#111827" },
@@ -87,7 +88,6 @@ const styles = StyleSheet.create({
   dayText: {
     fontSize: 12,
     fontWeight: "500",
-    top: 1,
   },
   todayText: {
     color: "#FFFFFF",
