@@ -1,9 +1,6 @@
-import { CalendarGrid } from "@/components/calendar/calendar-grid";
-import { CalendarMonthHeader } from "@/components/calendar/calendar-month-header";
-import { CalendarWeekdayHeader } from "@/components/calendar/calendar-weekday-header";
+import { Calendar } from "@/components/calendar/calendar";
 import React, { useState } from "react";
 import { StyleSheet, View } from "react-native";
-import { Calendar } from "react-native-calendars";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 type Todo = {
@@ -51,26 +48,8 @@ export default function TodoCalendarScreen() {
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <View style={styles.container}>
         <Calendar
-          onDayPress={(day) => setSelectedDate(day.dateString)}
-          markedDates={{
-            [selectedDate]: { selected: true, selectedColor: "#3b82f6" },
-          }}
-        />
-
-        <CalendarMonthHeader
-          year={2026}
-          month={3}
-          onPressPrevMonth={() => {
-            console.log("prev");
-          }}
-          onPressNextMonth={() => {
-            console.log("next");
-          }}
-        />
-        <CalendarWeekdayHeader />
-        <CalendarGrid
-          year={2026}
-          month={3}
+          initialYear={2026}
+          initialMonth={3}
           selectedDate="2026-03-15"
           onPressDate={(dateString) => {
             console.log(dateString);
