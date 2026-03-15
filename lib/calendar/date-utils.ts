@@ -8,6 +8,10 @@ export const getFirstDayOfMonth = (year: number, month: number) => {
   return new Date(year, month - 1, 1).getDay();
 };
 
+export const getLeadingCellCount = (year: number, month: number) => {
+  return getFirstDayOfMonth(year, month);
+};
+
 const padZero = (value: number) => {
   return String(value).padStart(2, "0");
 };
