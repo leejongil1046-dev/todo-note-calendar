@@ -1,4 +1,5 @@
 import { CalendarGrid } from "@/components/calendar/calendar-grid";
+import { CalendarMonthHeader } from "@/components/calendar/calendar-month-header";
 import { CalendarWeekdayHeader } from "@/components/calendar/calendar-weekday-header";
 import React, { useState } from "react";
 import { StyleSheet, View } from "react-native";
@@ -56,6 +57,16 @@ export default function TodoCalendarScreen() {
           }}
         />
 
+        <CalendarMonthHeader
+          year={2026}
+          month={3}
+          onPressPrevMonth={() => {
+            console.log("prev");
+          }}
+          onPressNextMonth={() => {
+            console.log("next");
+          }}
+        />
         <CalendarWeekdayHeader />
         <CalendarGrid
           year={2026}
