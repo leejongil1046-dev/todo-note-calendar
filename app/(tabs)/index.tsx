@@ -1,3 +1,4 @@
+import { CalendarCell } from "@/components/calendar/calendar-cell";
 import React, { useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { Calendar } from "react-native-calendars";
@@ -51,6 +52,22 @@ export default function TodoCalendarScreen() {
           onDayPress={(day) => setSelectedDate(day.dateString)}
           markedDates={{
             [selectedDate]: { selected: true, selectedColor: "#3b82f6" },
+          }}
+        />
+
+        <CalendarCell
+          cell={{
+            key: "2026-03-15",
+            dateString: "2026-03-15",
+            year: 2026,
+            month: 3,
+            day: 15,
+            inCurrentMonth: true,
+            isToday: false,
+            isSelected: true,
+          }}
+          onPress={(dateString) => {
+            console.log(dateString);
           }}
         />
 
