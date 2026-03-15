@@ -1,3 +1,4 @@
+import { AppTopBar } from "@/components/app-top-bar";
 import { Calendar } from "@/components/calendar/calendar";
 import { getKoreaTodayParts } from "@/lib/date/get-korea-today-parts";
 import React, { useState } from "react";
@@ -14,7 +15,7 @@ type TodosByDate = {
   [date: string]: Todo[];
 };
 
-export default function TodoCalendarScreen() {
+export default function CalendarScreen() {
   const koreaToday = getKoreaTodayParts();
 
   const [selectedDate, setSelectedDate] = useState(koreaToday.dateString);
@@ -48,6 +49,18 @@ export default function TodoCalendarScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
+      <AppTopBar
+        title="캘린더"
+        onPressMenu={() => {
+          /* 사이드 메뉴 열기 */
+        }}
+        onPressSearch={() => {
+          /* 검색 화면 열기 */
+        }}
+        onPressMore={() => {
+          /* 캘린더 전용 메뉴(예: 보기 설정) */
+        }}
+      />
       <View style={styles.container}>
         <Calendar
           initialYear={koreaToday.year}
