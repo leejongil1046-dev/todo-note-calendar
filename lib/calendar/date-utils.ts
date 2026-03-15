@@ -12,6 +12,20 @@ export const getLeadingCellCount = (year: number, month: number) => {
   return getFirstDayOfMonth(year, month);
 };
 
+export const getPrevYearMonth = (year: number, month: number) => {
+  if (month === 1) {
+    return {
+      year: year - 1,
+      month: 12,
+    };
+  }
+
+  return {
+    year,
+    month: month - 1,
+  };
+};
+
 const padZero = (value: number) => {
   return String(value).padStart(2, "0");
 };
@@ -50,6 +64,46 @@ export const buildCurrentMonthCells = (
       month,
       day,
       inCurrentMonth: true,
+      isToday: dateString === todayDateString,
+      isSelected: dateString === selectedDate,
+    });
+  }
+
+  return cells;
+};
+
+export const buildLeadingMonthCells = (
+  year: number,
+  month: number,
+  selectedDate?: string,
+) => {
+  const leadingCount = getLeadingCellCount(year, month);
+
+  if (leadingCount === 0) {
+    return [];
+  }
+
+  const prevYearMonth = getPrevYearMonth(year, month);
+  const prevMonthDays = getDaysInMonth(prevYearMonth.year, prevYearMonth.month);
+  const todayDateString = getTodayDateString();
+
+  const cells: CalendarCellData[] = [];
+  const startDay = prevMonthDays - leadingCount + 1;
+
+  for (let day = startDay; day <= prevMonthDays; day += 1) {
+    const dateString = formatDateString(
+      prevYearMonth.year,
+      prevYearMonth.month,
+      day,
+    );
+
+    cells.push({
+      key: dateString,
+      dateString,
+      year: prevYearMonth.year,
+      month: prevYearMonth.month,
+      day,
+      inCurrentMonth: false,
       isToday: dateString === todayDateString,
       isSelected: dateString === selectedDate,
     });
