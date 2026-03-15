@@ -26,6 +26,20 @@ export const getPrevYearMonth = (year: number, month: number) => {
   };
 };
 
+export const getNextYearMonth = (year: number, month: number) => {
+  if (month === 12) {
+    return {
+      year: year + 1,
+      month: 1,
+    };
+  }
+
+  return {
+    year,
+    month: month + 1,
+  };
+};
+
 const padZero = (value: number) => {
   return String(value).padStart(2, "0");
 };
@@ -102,6 +116,47 @@ export const buildLeadingMonthCells = (
       dateString,
       year: prevYearMonth.year,
       month: prevYearMonth.month,
+      day,
+      inCurrentMonth: false,
+      isToday: dateString === todayDateString,
+      isSelected: dateString === selectedDate,
+    });
+  }
+
+  return cells;
+};
+
+export const buildTrailingMonthCells = (
+  year: number,
+  month: number,
+  selectedDate?: string,
+) => {
+  const leadingCells = buildLeadingMonthCells(year, month, selectedDate);
+  const currentMonthCells = buildCurrentMonthCells(year, month, selectedDate);
+
+  const trailingCount = 42 - (leadingCells.length + currentMonthCells.length);
+
+  if (trailingCount <= 0) {
+    return [];
+  }
+
+  const nextYearMonth = getNextYearMonth(year, month);
+  const todayDateString = getTodayDateString();
+
+  const cells: CalendarCellData[] = [];
+
+  for (let day = 1; day <= trailingCount; day += 1) {
+    const dateString = formatDateString(
+      nextYearMonth.year,
+      nextYearMonth.month,
+      day,
+    );
+
+    cells.push({
+      key: dateString,
+      dateString,
+      year: nextYearMonth.year,
+      month: nextYearMonth.month,
       day,
       inCurrentMonth: false,
       isToday: dateString === todayDateString,
