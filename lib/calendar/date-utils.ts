@@ -58,6 +58,14 @@ export const getTodayDateString = () => {
   );
 };
 
+export const getCalendarCellCount = (year: number, month: number) => {
+  const leadingCount = getLeadingCellCount(year, month);
+  const currentMonthDays = getDaysInMonth(year, month);
+  const totalCount = leadingCount + currentMonthDays;
+
+  return totalCount <= 35 ? 35 : 42;
+};
+
 export const buildCurrentMonthCells = (
   year: number,
   month: number,
@@ -133,8 +141,10 @@ export const buildTrailingMonthCells = (
 ) => {
   const leadingCells = buildLeadingMonthCells(year, month, selectedDate);
   const currentMonthCells = buildCurrentMonthCells(year, month, selectedDate);
+  const calendarCellCount = getCalendarCellCount(year, month);
 
-  const trailingCount = 42 - (leadingCells.length + currentMonthCells.length);
+  const trailingCount =
+    calendarCellCount - (leadingCells.length + currentMonthCells.length);
 
   if (trailingCount <= 0) {
     return [];
@@ -165,4 +175,26 @@ export const buildTrailingMonthCells = (
   }
 
   return cells;
+};
+
+export const buildMonthCells = (
+  year: number,
+  month: number,
+  selectedDate?: string,
+) => {
+  const leadingCells = buildLeadingMonthCells(year, month, selectedDate);
+  const currentMonthCells = buildCurrentMonthCells(year, month, selectedDate);
+  const trailingCells = buildTrailingMonthCells(year, month, selectedDate);
+
+  return [...leadingCells, ...currentMonthCells, ...trailingCells];
+};
+
+export const chunkMonthCells = (cells: CalendarCellData[]) => {
+  const weeks: CalendarCellData[][] = [];
+
+  for (let index = 0; index < cells.length; index += 7) {
+    weeks.push(cells.slice(index, index + 7));
+  }
+
+  return weeks;
 };
