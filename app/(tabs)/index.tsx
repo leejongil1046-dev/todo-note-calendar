@@ -1,4 +1,5 @@
 import { Calendar } from "@/components/calendar/calendar";
+import { getKoreaTodayParts } from "@/lib/date/get-korea-today-parts";
 import React, { useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -14,8 +15,9 @@ type TodosByDate = {
 };
 
 export default function TodoCalendarScreen() {
-  const today = new Date().toISOString().slice(0, 10); // 'YYYY-MM-DD'
-  const [selectedDate, setSelectedDate] = useState(today);
+  const koreaToday = getKoreaTodayParts();
+
+  const [selectedDate, setSelectedDate] = useState(koreaToday.dateString);
   const [todosByDate, setTodosByDate] = useState<TodosByDate>({});
   const [input, setInput] = useState("");
 
@@ -48,45 +50,13 @@ export default function TodoCalendarScreen() {
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <View style={styles.container}>
         <Calendar
-          initialYear={2026}
-          initialMonth={3}
-          selectedDate="2026-03-15"
+          initialYear={koreaToday.year}
+          initialMonth={koreaToday.month}
+          selectedDate={selectedDate}
           onPressDate={(dateString) => {
-            console.log(dateString);
+            setSelectedDate(dateString);
           }}
         />
-
-        {/* <View style={styles.todoContainer}>
-        <Text style={styles.dateTitle}>{selectedDate}의 할 일</Text>
-
-        <View style={styles.inputRow}>
-          <TextInput
-            style={styles.input}
-            placeholder="할 일을 입력하세요"
-            value={input}
-            onChangeText={setInput}
-          />
-          <Button title="추가" onPress={addTodo} />
-        </View>
-
-        <FlatList
-          data={todos}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              onPress={() => toggleTodo(item.id)}
-              style={styles.todoItem}
-            >
-              <Text style={[styles.todoText, item.done && styles.todoDone]}>
-                {item.text}
-              </Text>
-            </TouchableOpacity>
-          )}
-          ListEmptyComponent={
-            <Text style={styles.emptyText}>아직 할 일이 없습니다.</Text>
-          }
-        />
-      </View> */}
       </View>
     </SafeAreaView>
   );
