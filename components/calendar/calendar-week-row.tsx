@@ -15,8 +15,13 @@ export const CalendarWeekRow = ({
 }: CalendarWeekRowProps) => {
   return (
     <View style={styles.row}>
-      {week.map((cell) => (
-        <CalendarCell key={cell.key} cell={cell} onPress={onPressDate} />
+      {week.map((cell, index) => (
+        <CalendarCell
+          key={cell.key}
+          cell={cell}
+          weekdayIndex={index}
+          onPress={onPressDate}
+        />
       ))}
     </View>
   );

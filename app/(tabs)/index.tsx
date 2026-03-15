@@ -1,4 +1,5 @@
 import { CalendarGrid } from "@/components/calendar/calendar-grid";
+import { CalendarWeekdayHeader } from "@/components/calendar/calendar-weekday-header";
 import React, { useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { Calendar } from "react-native-calendars";
@@ -55,6 +56,7 @@ export default function TodoCalendarScreen() {
           }}
         />
 
+        <CalendarWeekdayHeader />
         <CalendarGrid
           year={2026}
           month={3}
