@@ -1,4 +1,4 @@
-import { CalendarCell } from "@/components/calendar/calendar-cell";
+import { CalendarGrid } from "@/components/calendar/calendar-grid";
 import React, { useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { Calendar } from "react-native-calendars";
@@ -55,18 +55,11 @@ export default function TodoCalendarScreen() {
           }}
         />
 
-        <CalendarCell
-          cell={{
-            key: "2026-03-15",
-            dateString: "2026-03-15",
-            year: 2026,
-            month: 3,
-            day: 15,
-            inCurrentMonth: true,
-            isToday: false,
-            isSelected: true,
-          }}
-          onPress={(dateString) => {
+        <CalendarGrid
+          year={2026}
+          month={3}
+          selectedDate="2026-03-15"
+          onPressDate={(dateString) => {
             console.log(dateString);
           }}
         />
