@@ -18,25 +18,30 @@ export const CalendarCell = ({
   };
 
   const isSunday = weekdayIndex === 0;
+  const isWeekday = weekdayIndex > 0 && weekdayIndex < 6;
   const isSaturday = weekdayIndex === 6;
 
   return (
-    <Pressable style={styles.cell} onPress={handlePress}>
+    <Pressable
+      style={[styles.cell, cell.isSelected && styles.isSelectedCell]}
+      onPress={handlePress}
+    >
       <View
         style={[
           styles.dayBadge,
-          cell.isSelected && styles.selectedDayBadge,
-          cell.isToday && styles.todayDayBadge,
+          cell.isToday && isSunday && styles.todaySundayBadge,
+          cell.isToday && isWeekday && styles.todayWeekDayBadge,
+          cell.isToday && isSaturday && styles.todaySaturDayBadge,
         ]}
       >
         <Text
           style={[
             styles.dayText,
             isSunday && styles.sundayText,
+            isWeekday && styles.weekdayText,
             isSaturday && styles.saturdayText,
             !cell.inCurrentMonth && styles.outsideMonthText,
-            cell.isSelected && styles.selectedDayText,
-            cell.isToday && !cell.isSelected && styles.todayDayText,
+            cell.isToday && styles.todayText,
           ]}
         >
           {cell.day}
@@ -49,42 +54,54 @@ export const CalendarCell = ({
 const styles = StyleSheet.create({
   cell: {
     width: "14.2857%",
-    aspectRatio: 1,
+    aspectRatio: 2 / 3,
     alignItems: "center",
-    justifyContent: "center",
+    justifyContent: "flex-start",
+    borderWidth: 1.5,
+    borderRadius: 9,
+    borderColor: "rgba(0,0,0,0)",
+  },
+  isSelectedCell: {
+    borderWidth: 1.5,
+    borderRadius: 9,
+    borderColor: "#CCCCCC",
   },
   dayBadge: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 25,
+    height: 25,
+    borderRadius: 5,
     alignItems: "center",
     justifyContent: "center",
+    marginTop: 3,
   },
-  selectedDayBadge: {
-    backgroundColor: "#111827",
-  },
-  todayDayBadge: {
+  selectedSundayBadge: { backgroundColor: "#DC2626" },
+  selectedWeekDayBadge: { backgroundColor: "#111827" },
+  selectedSaturDayBadge: { backgroundColor: "#2563EB" },
+  todaySundayBadge: {
     borderWidth: 1,
-    borderColor: "#9CA3AF",
+    borderColor: "#DC2626",
+    backgroundColor: "#DC2626",
   },
+  todayWeekDayBadge: { borderWidth: 1, borderColor: "#9CA3AF" },
+  todaySaturDayBadge: { borderWidth: 1, borderColor: "#2563EB" },
   dayText: {
-    fontSize: 15,
+    fontSize: 12,
     fontWeight: "500",
-    color: "#374151",
+    top: 1,
+  },
+  todayText: {
+    color: "#FFFFFF",
   },
   sundayText: {
     color: "#DC2626",
+  },
+  weekdayText: {
+    color: "#374151",
   },
   saturdayText: {
     color: "#2563EB",
   },
   outsideMonthText: {
     color: "#C7CDD6",
-  },
-  selectedDayText: {
-    color: "#FFFFFF",
-  },
-  todayDayText: {
-    color: "#111827",
   },
 });

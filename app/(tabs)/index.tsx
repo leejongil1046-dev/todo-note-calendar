@@ -64,7 +64,12 @@ export default function TodoCalendarScreen() {
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: "white" },
-  container: { flex: 1 },
+  container: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "flex-start",
+    padding: 5,
+  },
   todoContainer: { flex: 1, padding: 16 },
   dateTitle: { fontSize: 18, fontWeight: "600", marginBottom: 12 },
   inputRow: { flexDirection: "row", gap: 8, marginBottom: 12 },

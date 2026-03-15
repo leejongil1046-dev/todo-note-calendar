@@ -30,7 +30,8 @@ export const CalendarWeekdayHeader = () => {
 const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
-    marginBottom: 6,
+    borderBottomWidth: 0.5,
+    borderColor: "#DDDDDD",
   },
   cell: {
     width: "14.2857%",
