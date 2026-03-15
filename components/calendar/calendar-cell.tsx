@@ -83,8 +83,16 @@ const styles = StyleSheet.create({
     borderColor: "#DC2626",
     backgroundColor: "#DC2626",
   },
-  todayWeekDayBadge: { borderWidth: 1, borderColor: "#9CA3AF" },
-  todaySaturDayBadge: { borderWidth: 1, borderColor: "#2563EB" },
+  todayWeekDayBadge: {
+    borderWidth: 1,
+    borderColor: "#000000",
+    backgroundColor: "#000000",
+  },
+  todaySaturDayBadge: {
+    borderWidth: 1,
+    borderColor: "#2563EB",
+    backgroundColor: "#2563EB",
+  },
   dayText: {
     fontSize: 12,
     fontWeight: "500",

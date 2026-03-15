@@ -1,0 +1,6 @@
+<svg width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="96" height="96" fill="#F5F5F5"/>
+<rect width="96" height="96" fill="white"/>
+<rect width="45.2352" height="16" rx="6.4" transform="matrix(0.628065 0.778161 -0.753565 0.657374 24.0566 32.7285)" fill="#3DADFF" stroke="#1E1E1E" stroke-width="2" stroke-linecap="round"/>
+<rect width="66.0068" height="16" rx="6.4" transform="matrix(-0.628065 0.778161 -0.753565 -0.657374 84.5889 27.5176)" fill="#0064E0" stroke="#1E1E1E" stroke-width="2" stroke-linecap="round"/>
+</svg>

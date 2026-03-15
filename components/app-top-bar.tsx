@@ -1,8 +1,9 @@
 // components/AppTopBar.tsx
 import Entypo from "@expo/vector-icons/Entypo";
 import Feather from "@expo/vector-icons/Feather";
+import { Image } from "expo-image";
 import React from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
 
 type Props = {
   title?: string;
@@ -24,9 +25,14 @@ export function AppTopBar({
         <Feather name="menu" size={22} color="#111827" />
       </TouchableOpacity>
 
-      {/* 가운데: 타이틀 */}
+      {/* 가운데: 로고 */}
       <View style={styles.center}>
-        <Text style={styles.title}>{title}</Text>
+        <Image
+          source={require("@/assets/images/logo.svg")}
+          style={styles.logo}
+          contentFit="contain"
+        />
+        {/* <Text style={styles.title}>Todo Note Calendar</Text> */}
       </View>
 
       {/* 오른쪽: 검색 + 더보기 */}
@@ -69,6 +75,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
+    flexDirection: "row",
   },
   right: {
     width: 60,
@@ -83,5 +90,11 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: "600",
     color: "#111827",
+  },
+  logo: {
+    height: 40,
+    width: 40,
+    // borderWidth: 1,
+    // borderRadius: 10,
   },
 });
