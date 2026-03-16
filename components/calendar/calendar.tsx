@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { StyleSheet, View } from "react-native";
 
+import type { CalendarCellData } from "@/lib/calendar/calendar-types";
 import { HolidayMap } from "@/lib/holidays-cache";
 import { CalendarGrid } from "./calendar-grid";
 import { CalendarMonthHeader } from "./calendar-month-header";
@@ -48,6 +49,21 @@ export const Calendar = ({
     return selectedDate;
   }, [selectedDate]);
 
+  const handlePressDate = (cell: CalendarCellData) => {
+    if (cell.inCurrentMonth) {
+      onPressDate?.(cell.dateString);
+      return;
+    }
+
+    const clicked = new Date(`${cell.dateString}T00:00:00`);
+    const newYear = clicked.getFullYear();
+    const newMonth = clicked.getMonth() + 1; // Calendar는 1~12 사용
+
+    setCurrentYear(newYear);
+    setCurrentMonth(newMonth);
+    onPressDate?.(cell.dateString);
+  };
+
   return (
     <View style={styles.container}>
       <CalendarMonthHeader
@@ -63,7 +79,7 @@ export const Calendar = ({
         year={currentYear}
         month={currentMonth}
         selectedDate={visibleSelectedDate}
-        onPressDate={onPressDate}
+        onPressDate={handlePressDate}
         holidayMap={holidayMap}
       />
     </View>

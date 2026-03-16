@@ -6,7 +6,7 @@ import type { CalendarCellData } from "@/lib/calendar/calendar-types";
 type CalendarCellProps = {
   cell: CalendarCellData;
   weekdayIndex: number;
-  onPress?: (dateString: string) => void;
+  onPress?: (cell: CalendarCellData) => void;
   holiday?: HolidayItem;
 };
 
@@ -17,7 +17,7 @@ export const CalendarCell = ({
   holiday,
 }: CalendarCellProps) => {
   const handlePress = () => {
-    onPress?.(cell.dateString);
+    onPress?.(cell);
   };
 
   const isSunday = weekdayIndex === 0;

@@ -7,7 +7,7 @@ import { CalendarCell } from "./calendar-cell";
 
 type CalendarWeekRowProps = {
   week: CalendarCellData[];
-  onPressDate?: (dateString: string) => void;
+  onPressDate?: (cell: CalendarCellData) => void;
   holidayMap?: HolidayMap;
 };
 

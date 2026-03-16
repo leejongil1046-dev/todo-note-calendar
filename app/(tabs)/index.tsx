@@ -36,7 +36,8 @@ export default function CalendarScreen() {
       setHolidayMap(map);
     };
     load();
-  }, [today, holidayMap]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // const todos = todosByDate[selectedDate] ?? [];
 
