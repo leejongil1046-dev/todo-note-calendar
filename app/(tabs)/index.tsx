@@ -1,7 +1,9 @@
 import { AppTopBar } from "@/components/app-top-bar";
 import { Calendar } from "@/components/calendar/calendar";
 import { getKoreaTodayParts } from "@/lib/date/get-korea-today-parts";
-import React, { useState } from "react";
+import { getHolidayMapForYear, HolidayMap } from "@/lib/holidays-cache";
+import Constants from "expo-constants";
+import React, { useEffect, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -15,37 +17,51 @@ type TodosByDate = {
   [date: string]: Todo[];
 };
 
+const SERVICE_KEY =
+  (Constants.expoConfig?.extra?.holidayApiKey as string) ?? "";
+
 export default function CalendarScreen() {
   const koreaToday = getKoreaTodayParts();
 
   const [selectedDate, setSelectedDate] = useState(koreaToday.dateString);
-  const [todosByDate, setTodosByDate] = useState<TodosByDate>({});
-  const [input, setInput] = useState("");
+  const today = new Date();
+  const [holidayMap, setHolidayMap] = useState<HolidayMap | null>(null);
+  // const [todosByDate, setTodosByDate] = useState<TodosByDate>({});
+  // const [input, setInput] = useState("");
 
-  const todos = todosByDate[selectedDate] ?? [];
-
-  const addTodo = () => {
-    if (!input.trim()) return;
-    const newTodo: Todo = {
-      id: Date.now().toString(),
-      text: input.trim(),
-      done: false,
+  useEffect(() => {
+    const load = async () => {
+      const year = today.getFullYear();
+      const map = await getHolidayMapForYear(year, SERVICE_KEY);
+      setHolidayMap(map);
     };
-    setTodosByDate((prev) => ({
-      ...prev,
-      [selectedDate]: [...(prev[selectedDate] ?? []), newTodo],
-    }));
-    setInput("");
-  };
+    load();
+  }, [today, holidayMap]);
 
-  const toggleTodo = (id: string) => {
-    setTodosByDate((prev) => ({
-      ...prev,
-      [selectedDate]: (prev[selectedDate] ?? []).map((t) =>
-        t.id === id ? { ...t, done: !t.done } : t,
-      ),
-    }));
-  };
+  // const todos = todosByDate[selectedDate] ?? [];
+
+  // const addTodo = () => {
+  //   if (!input.trim()) return;
+  //   const newTodo: Todo = {
+  //     id: Date.now().toString(),
+  //     text: input.trim(),
+  //     done: false,
+  //   };
+  //   setTodosByDate((prev) => ({
+  //     ...prev,
+  //     [selectedDate]: [...(prev[selectedDate] ?? []), newTodo],
+  //   }));
+  //   setInput("");
+  // };
+
+  // const toggleTodo = (id: string) => {
+  //   setTodosByDate((prev) => ({
+  //     ...prev,
+  //     [selectedDate]: (prev[selectedDate] ?? []).map((t) =>
+  //       t.id === id ? { ...t, done: !t.done } : t,
+  //     ),
+  //   }));
+  // };
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
@@ -66,6 +82,7 @@ export default function CalendarScreen() {
           initialYear={koreaToday.year}
           initialMonth={koreaToday.month}
           selectedDate={selectedDate}
+          holidayMap={holidayMap}
           onPressDate={(dateString) => {
             setSelectedDate(dateString);
           }}

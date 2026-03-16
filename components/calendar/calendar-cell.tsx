@@ -1,17 +1,20 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
+import { HolidayItem } from "@/lib/api/holidays";
 import type { CalendarCellData } from "@/lib/calendar/calendar-types";
 
 type CalendarCellProps = {
   cell: CalendarCellData;
   weekdayIndex: number;
   onPress?: (dateString: string) => void;
+  holiday?: HolidayItem;
 };
 
 export const CalendarCell = ({
   cell,
   weekdayIndex,
   onPress,
+  holiday,
 }: CalendarCellProps) => {
   const handlePress = () => {
     onPress?.(cell.dateString);
@@ -20,6 +23,7 @@ export const CalendarCell = ({
   const isSunday = weekdayIndex === 0;
   const isWeekday = weekdayIndex > 0 && weekdayIndex < 6;
   const isSaturday = weekdayIndex === 6;
+  const isHoliday = !!holiday?.isHoliday;
 
   return (
     <Pressable
@@ -29,17 +33,17 @@ export const CalendarCell = ({
       <View
         style={[
           styles.dayBadge,
-          cell.isToday && isSunday && styles.todaySundayBadge,
-          cell.isToday && isWeekday && styles.todayWeekDayBadge,
-          cell.isToday && isSaturday && styles.todaySaturDayBadge,
+          cell.isToday && (isSunday || isHoliday) && styles.todaySundayBadge,
+          cell.isToday && isWeekday && !isHoliday && styles.todayWeekDayBadge,
+          cell.isToday && isSaturday && !isHoliday && styles.todaySaturDayBadge,
         ]}
       >
         <Text
           style={[
             styles.dayText,
-            isSunday && styles.sundayText,
-            isWeekday && styles.weekdayText,
-            isSaturday && styles.saturdayText,
+            (isSunday || isHoliday) && styles.sundayText,
+            isWeekday && !isHoliday && styles.weekdayText,
+            isSaturday && !isHoliday && styles.saturdayText,
             !cell.inCurrentMonth && styles.outsideMonthText,
             cell.isToday && styles.todayText,
           ]}
@@ -47,6 +51,11 @@ export const CalendarCell = ({
           {cell.day}
         </Text>
       </View>
+      {holiday && (
+        <Text style={styles.holidayLabel} numberOfLines={1}>
+          {holiday.name}
+        </Text>
+      )}
     </Pressable>
   );
 };
@@ -111,5 +120,10 @@ const styles = StyleSheet.create({
   },
   outsideMonthText: {
     color: "#C7CDD6",
+  },
+  holidayLabel: {
+    fontSize: 8,
+    fontWeight: "500",
+    color: "#DC2626",
   },
 });

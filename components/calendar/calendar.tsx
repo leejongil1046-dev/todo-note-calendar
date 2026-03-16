@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { StyleSheet, View } from "react-native";
 
+import { HolidayMap } from "@/lib/holidays-cache";
 import { CalendarGrid } from "./calendar-grid";
 import { CalendarMonthHeader } from "./calendar-month-header";
 import { CalendarWeekdayHeader } from "./calendar-weekday-header";
@@ -10,6 +11,7 @@ type CalendarProps = {
   initialMonth: number;
   selectedDate?: string;
   onPressDate?: (dateString: string) => void;
+  holidayMap?: HolidayMap;
 };
 
 export const Calendar = ({
@@ -17,6 +19,7 @@ export const Calendar = ({
   initialMonth,
   selectedDate,
   onPressDate,
+  holidayMap,
 }: CalendarProps) => {
   const [currentYear, setCurrentYear] = useState(initialYear);
   const [currentMonth, setCurrentMonth] = useState(initialMonth);
@@ -61,6 +64,7 @@ export const Calendar = ({
         month={currentMonth}
         selectedDate={visibleSelectedDate}
         onPressDate={onPressDate}
+        holidayMap={holidayMap}
       />
     </View>
   );
