@@ -27,31 +27,31 @@ function TabItem({
   onPress,
   onLongPress,
 }: TabItemProps) {
-  const scale = useRef(new Animated.Value(focused ? 1.08 : 1)).current;
-  const translateY = useRef(new Animated.Value(focused ? -8 : 0)).current;
-  const bgOpacity = useRef(new Animated.Value(focused ? 1 : 0)).current;
+  const scale = useRef(new Animated.Value(1)).current;
+  const translateY = useRef(new Animated.Value(0)).current;
+  const opacity = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     Animated.parallel([
       Animated.spring(scale, {
         toValue: focused ? 1.05 : 1,
-        friction: 8,
-        tension: 40,
+        friction: 3,
+        tension: 50,
         useNativeDriver: true,
       }),
       Animated.spring(translateY, {
         toValue: focused ? -20 : 0,
-        friction: 8,
-        tension: 40,
+        friction: 3,
+        tension: 50,
         useNativeDriver: true,
       }),
-      Animated.timing(bgOpacity, {
+      Animated.timing(opacity, {
         toValue: focused ? 1 : 0,
         duration: 200,
         useNativeDriver: true,
       }),
     ]).start();
-  }, [focused, scale, translateY, bgOpacity]);
+  }, [focused, scale, translateY, opacity]);
 
   const handlePress = async () => {
     await Haptics.selectionAsync();
@@ -110,7 +110,7 @@ function TabItem({
             style={[
               styles.activeBubble,
               {
-                opacity: bgOpacity,
+                opacity: opacity,
               },
             ]}
           />
@@ -119,14 +119,13 @@ function TabItem({
       </Animated.View>
 
       <Animated.View
-        style={[{ transform: [{ translateY }] }, { opacity: bgOpacity }]}
+        style={[{ transform: [{ translateY }] }, { opacity: opacity }]}
       >
         <Text
           style={[
             styles.label,
             {
               color: focused ? Colors.light.tint : color,
-              //   opacity: focused ? 1 : 0,
             },
           ]}
         >
@@ -233,7 +232,6 @@ const styles = StyleSheet.create({
     height: 60,
     alignItems: "center",
     justifyContent: "center",
-    // backgroundColor: "red",
   },
   iconFrame: {
     width: 60,
