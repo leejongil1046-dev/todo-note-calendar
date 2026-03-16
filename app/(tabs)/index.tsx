@@ -94,12 +94,14 @@ export default function CalendarScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: "white" },
+  safeArea: { flex: 1, backgroundColor: "#FFFFFF" },
   container: {
     flex: 1,
     alignItems: "center",
     justifyContent: "flex-start",
     padding: 5,
+    paddingTop: 15,
+    backgroundColor: "#FFFFFF",
   },
   todoContainer: { flex: 1, padding: 16 },
   dateTitle: { fontSize: 18, fontWeight: "600", marginBottom: 12 },

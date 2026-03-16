@@ -61,7 +61,7 @@ const styles = StyleSheet.create({
     height: 52,
     paddingHorizontal: 16,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: "#E5E7EB",
+    borderBottomColor: "#CCCCCC",
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#FFFFFF",

@@ -6,6 +6,7 @@ import { Colors } from "@/constants/theme";
 import Feather from "@expo/vector-icons/Feather";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
+import { StyleSheet } from "react-native";
 
 export default function TabLayout() {
   return (
@@ -16,8 +17,19 @@ export default function TabLayout() {
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarStyle: {
-          height: 110,
-          paddingTop: 10,
+          height: 130,
+          borderTopColor: "#DBEAFE",
+          borderTopWidth: StyleSheet.hairlineWidth,
+          backgroundColor: "#F3F8FF",
+        },
+        tabBarItemStyle: {
+          flexDirection: "row",
+          justifyContent: "center",
+          alignItems: "center",
+        },
+        tabBarLabelStyle: {
+          marginTop: 3,
+          fontSize: 10,
         },
       }}
     >
@@ -26,7 +38,7 @@ export default function TabLayout() {
         options={{
           title: "캘린더",
           tabBarIcon: ({ color }) => (
-            <FontAwesome5 name="calendar-alt" size={24} color={color} />
+            <FontAwesome5 name="calendar-alt" size={28} color={color} />
           ),
         }}
       />
@@ -35,7 +47,7 @@ export default function TabLayout() {
         options={{
           title: "할 일 목록",
           tabBarIcon: ({ color }) => (
-            <Feather name="check-square" size={24} color={color} />
+            <Feather name="check-square" size={28} color={color} />
           ),
         }}
       />
@@ -44,7 +56,7 @@ export default function TabLayout() {
         options={{
           title: "사용자",
           tabBarIcon: ({ color }) => (
-            <FontAwesome name="user-circle" size={24} color={color} />
+            <FontAwesome name="user-circle" size={28} color={color} />
           ),
         }}
       />
