@@ -34,7 +34,7 @@ export const CalendarWeekRow = ({
 const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
-    borderBottomWidth: 0.5,
+    borderBottomWidth: StyleSheet.hairlineWidth,
     borderColor: "#CCCCCC",
   },
 });
