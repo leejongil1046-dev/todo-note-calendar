@@ -7,15 +7,22 @@ export type HolidayMap = Record<string, HolidayItem>;
 const getCacheKey = (year: number) => `holidays:${year}`;
 const getUpdatedKey = (year: number) => `holidays-updated:${year}`;
 
+const SEED_VERSION = "v2"; // seed 바꿀 때마다 v2, v3 처럼만 변경
+const getSeedVersionKey = (year: number) => `holidays-seed-version:${year}`;
+
 export async function ensureHolidaySeed(years: number[]) {
   for (const year of years) {
     const key = getCacheKey(year);
-    const cached = await AsyncStorage.getItem(key);
-
-    if (!cached) {
+    const versionKey = getSeedVersionKey(year);
+    const [cached, storedVersion] = await Promise.all([
+      AsyncStorage.getItem(key),
+      AsyncStorage.getItem(versionKey),
+    ]);
+    if (!cached || storedVersion !== SEED_VERSION) {
       const seed = holidaySeedByYear[year];
       if (seed) {
         await AsyncStorage.setItem(key, JSON.stringify(seed));
+        await AsyncStorage.setItem(versionKey, SEED_VERSION);
       }
     }
   }
