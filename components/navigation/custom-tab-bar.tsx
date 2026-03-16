@@ -205,21 +205,20 @@ const styles = StyleSheet.create({
   inner: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
     height: 70,
-    paddingTop: 35,
+    paddingTop: 20,
     paddingHorizontal: 8,
     marginBottom: 20,
     marginHorizontal: 20,
     borderRadius: 30,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: "#DBEAFE",
     backgroundColor: "#F3F8FF",
 
     // 그림자 (iOS)
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.12,
-    shadowRadius: 16,
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
 
     // 그림자 (Android)
     elevation: 3,
@@ -256,5 +255,6 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 10,
     fontWeight: "500",
+    lineHeight: 10,
   },
 });
