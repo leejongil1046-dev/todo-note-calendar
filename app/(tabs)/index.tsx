@@ -4,7 +4,7 @@ import { getKoreaTodayParts } from "@/lib/date/get-korea-today-parts";
 import { getHolidayMapForYear, HolidayMap } from "@/lib/holidays-cache";
 import Constants from "expo-constants";
 import React, { useEffect, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 type Todo = {
@@ -79,15 +79,21 @@ export default function CalendarScreen() {
         }}
       />
       <View style={styles.container}>
-        <Calendar
-          initialYear={koreaToday.year}
-          initialMonth={koreaToday.month}
-          selectedDate={selectedDate}
-          holidayMap={holidayMap ?? undefined}
-          onPressDate={(dateString) => {
-            setSelectedDate(dateString);
-          }}
-        />
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={{ paddingBottom: 24 }} // 필요하면 여유 여백
+          showsVerticalScrollIndicator={false}
+        >
+          <Calendar
+            initialYear={koreaToday.year}
+            initialMonth={koreaToday.month}
+            selectedDate={selectedDate}
+            holidayMap={holidayMap ?? undefined}
+            onPressDate={(dateString) => {
+              setSelectedDate(dateString);
+            }}
+          />
+        </ScrollView>
       </View>
     </SafeAreaView>
   );
