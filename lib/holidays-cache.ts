@@ -1,29 +1,58 @@
+import { holidaySeedByYear } from "@/data/holiday-seed";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { fetchNationalHolidays, HolidayItem } from "./api/holidays";
 
 export type HolidayMap = Record<string, HolidayItem>;
 
-export async function getHolidayMapForYear(
-  year: number,
-  serviceKey: string,
+const getCacheKey = (year: number) => `holidays:${year}`;
+const getUpdatedKey = (year: number) => `holidays-updated:${year}`;
+
+export async function ensureHolidaySeed(years: number[]) {
+  for (const year of years) {
+    const key = getCacheKey(year);
+    const cached = await AsyncStorage.getItem(key);
+
+    if (!cached) {
+      const seed = holidaySeedByYear[year];
+      if (seed) {
+        await AsyncStorage.setItem(key, JSON.stringify(seed));
+      }
+    }
+  }
+}
+
+export async function getHolidayMapForYears(
+  years: number[],
 ): Promise<HolidayMap> {
-  const cacheKey = `holidays:${year}`;
-  const cached = await AsyncStorage.getItem(cacheKey);
-  if (cached) {
-    return JSON.parse(cached) as HolidayMap;
+  const merged: HolidayMap = {};
+
+  for (const year of years) {
+    const key = getCacheKey(year);
+    const cached = await AsyncStorage.getItem(key);
+    if (!cached) continue;
+
+    const parsed = JSON.parse(cached) as HolidayMap;
+    Object.assign(merged, parsed);
   }
 
+  return merged;
+}
+
+export async function refreshHolidayYear(year: number, serviceKey: string) {
   const allMonths: HolidayItem[] = [];
+
   for (let m = 1; m <= 12; m++) {
     const monthItems = await fetchNationalHolidays(year, m, serviceKey);
     allMonths.push(...monthItems);
   }
 
   const map: HolidayMap = {};
-  for (const h of allMonths) {
-    map[h.date] = h;
+  for (const item of allMonths) {
+    map[item.date] = item;
   }
 
-  await AsyncStorage.setItem(cacheKey, JSON.stringify(map));
+  await AsyncStorage.setItem(getCacheKey(year), JSON.stringify(map));
+  await AsyncStorage.setItem(getUpdatedKey(year), new Date().toISOString());
+
   return map;
 }

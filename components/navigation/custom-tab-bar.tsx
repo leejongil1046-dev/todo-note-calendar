@@ -34,7 +34,7 @@ function TabItem({
   useEffect(() => {
     Animated.parallel([
       Animated.spring(scale, {
-        toValue: focused ? 1.1 : 1,
+        toValue: focused ? 1.05 : 1,
         friction: 8,
         tension: 40,
         useNativeDriver: true,

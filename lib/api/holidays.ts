@@ -1,4 +1,3 @@
-// lib/api/holidays.ts
 const BASE_URL =
   "http://apis.data.go.kr/B090041/openapi/service/SpcdeInfoService";
 

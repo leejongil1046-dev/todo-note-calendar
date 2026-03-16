@@ -1,7 +1,12 @@
 import { AppTopBar } from "@/components/app-top-bar";
 import { Calendar } from "@/components/calendar/calendar";
 import { getKoreaTodayParts } from "@/lib/date/get-korea-today-parts";
-import { getHolidayMapForYear, HolidayMap } from "@/lib/holidays-cache";
+import {
+  ensureHolidaySeed,
+  getHolidayMapForYears,
+  HolidayMap,
+  refreshHolidayYear,
+} from "@/lib/holidays-cache";
 import Constants from "expo-constants";
 import React, { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
@@ -20,6 +25,8 @@ type TodosByDate = {
 const SERVICE_KEY =
   (Constants.expoConfig?.extra?.holidayApiKey as string) ?? "";
 
+const SHOULD_REFRESH_HOLIDAYS = false;
+
 export default function CalendarScreen() {
   const koreaToday = getKoreaTodayParts();
 
@@ -31,12 +38,26 @@ export default function CalendarScreen() {
 
   useEffect(() => {
     const load = async () => {
-      const year = today.getFullYear();
-      const map = await getHolidayMapForYear(year, SERVICE_KEY);
-      setHolidayMap(map);
+      const years = [2024, 2025, 2026, 2027];
+
+      await ensureHolidaySeed(years);
+
+      const cachedMap = await getHolidayMapForYears(years);
+      setHolidayMap(cachedMap);
+
+      if (!SHOULD_REFRESH_HOLIDAYS) return;
+
+      const currentYear = new Date().getFullYear();
+      const nextYear = currentYear + 1;
+
+      await refreshHolidayYear(currentYear, SERVICE_KEY);
+      await refreshHolidayYear(nextYear, SERVICE_KEY);
+
+      const updatedMap = await getHolidayMapForYears(years);
+      setHolidayMap(updatedMap);
     };
+
     load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // const todos = todosByDate[selectedDate] ?? [];
