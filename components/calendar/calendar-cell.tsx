@@ -27,7 +27,11 @@ export const CalendarCell = ({
 
   return (
     <Pressable
-      style={[styles.cell, cell.isSelected && styles.isSelectedCell]}
+      style={[
+        styles.cell,
+        cell.isSelected && styles.isSelectedCell,
+        !cell.inCurrentMonth && styles.outsideMonthCell,
+      ]}
       onPress={handlePress}
     >
       <View
@@ -44,7 +48,6 @@ export const CalendarCell = ({
             (isSunday || isHoliday) && styles.sundayText,
             isWeekday && !isHoliday && styles.weekdayText,
             isSaturday && !isHoliday && styles.saturdayText,
-            !cell.inCurrentMonth && styles.outsideMonthText,
             cell.isToday && styles.todayText,
           ]}
         >
@@ -74,6 +77,9 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderRadius: 9,
     borderColor: "#CCCCCC",
+  },
+  outsideMonthCell: {
+    opacity: 0.2,
   },
   dayBadge: {
     width: 25,
@@ -117,9 +123,6 @@ const styles = StyleSheet.create({
   },
   saturdayText: {
     color: "#2563EB",
-  },
-  outsideMonthText: {
-    color: "#C7CDD6",
   },
   holidayLabel: {
     fontSize: 8,

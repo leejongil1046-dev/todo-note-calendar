@@ -63,7 +63,7 @@ export const getCalendarCellCount = (year: number, month: number) => {
   const currentMonthDays = getDaysInMonth(year, month);
   const totalCount = leadingCount + currentMonthDays;
 
-  return totalCount <= 35 ? 35 : 42;
+  return totalCount <= 28 ? 28 : totalCount <= 35 ? 35 : 42;
 };
 
 export const buildCurrentMonthCells = (

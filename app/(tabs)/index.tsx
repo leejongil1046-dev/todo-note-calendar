@@ -82,7 +82,7 @@ export default function CalendarScreen() {
           initialYear={koreaToday.year}
           initialMonth={koreaToday.month}
           selectedDate={selectedDate}
-          holidayMap={holidayMap}
+          holidayMap={holidayMap ?? undefined}
           onPressDate={(dateString) => {
             setSelectedDate(dateString);
           }}
