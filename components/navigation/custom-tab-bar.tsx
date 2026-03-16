@@ -40,7 +40,7 @@ function TabItem({
         useNativeDriver: true,
       }),
       Animated.spring(translateY, {
-        toValue: focused ? -30 : 0,
+        toValue: focused ? -20 : 0,
         friction: 8,
         tension: 40,
         useNativeDriver: true,
