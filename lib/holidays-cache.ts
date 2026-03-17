@@ -45,7 +45,10 @@ export async function getHolidayMapForYears(
   return merged;
 }
 
-export async function refreshHolidayYear(year: number, serviceKey: string) {
+export async function buildHolidaySeedYear(
+  year: number,
+  serviceKey: string,
+): Promise<HolidayMap> {
   const allMonths: HolidayItem[] = [];
 
   for (let m = 1; m <= 12; m++) {
@@ -58,8 +61,18 @@ export async function refreshHolidayYear(year: number, serviceKey: string) {
     map[item.date] = item;
   }
 
-  await AsyncStorage.setItem(getCacheKey(year), JSON.stringify(map));
-  await AsyncStorage.setItem(getUpdatedKey(year), new Date().toISOString());
-
   return map;
+}
+
+export async function buildHolidaySeedByYears(
+  years: number[],
+  serviceKey: string,
+): Promise<Record<number, HolidayMap>> {
+  const result: Record<number, HolidayMap> = {};
+
+  for (const year of years) {
+    result[year] = await buildHolidaySeedYear(year, serviceKey);
+  }
+
+  return result;
 }

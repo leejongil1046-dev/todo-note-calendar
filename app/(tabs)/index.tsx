@@ -2,10 +2,10 @@ import { AppTopBar } from "@/components/app-top-bar";
 import { Calendar } from "@/components/calendar/calendar";
 import { getKoreaTodayParts } from "@/lib/date/get-korea-today-parts";
 import {
+  buildHolidaySeedByYears,
   ensureHolidaySeed,
   getHolidayMapForYears,
   HolidayMap,
-  refreshHolidayYear,
 } from "@/lib/holidays-cache";
 import Constants from "expo-constants";
 import React, { useEffect, useState } from "react";
@@ -50,11 +50,7 @@ export default function CalendarScreen() {
       const currentYear = new Date().getFullYear();
       const nextYear = currentYear + 1;
 
-      await refreshHolidayYear(currentYear, SERVICE_KEY);
-      await refreshHolidayYear(nextYear, SERVICE_KEY);
-
-      const updatedMap = await getHolidayMapForYears(years);
-      setHolidayMap(updatedMap);
+      await buildHolidaySeedByYears([currentYear, nextYear], SERVICE_KEY);
     };
 
     load();
