@@ -135,7 +135,7 @@ const styles = StyleSheet.create({
     color: "#DC2626",
   },
   weekdayText: {
-    color: "#374151",
+    color: "#000000",
   },
   saturdayText: {
     color: "#2563EB",

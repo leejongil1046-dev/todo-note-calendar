@@ -87,9 +87,20 @@ export function DateDetailModal({
               {meta.year}년 {meta.month}월 {meta.day}일 ({meta.weekdayLabel})
             </Text>
             {meta.isHoliday && meta.holidayName && (
-              <Text style={styles.holidayText}>{meta.holidayName}</Text>
+              <View style={styles.holidayCard}>
+                <Text style={styles.holidayText}>{meta.holidayName}</Text>
+              </View>
             )}
-            {/* TODO: 여기 아래에 투두 리스트/기념일 등을 배치 */}
+
+            <View style={styles.todoCard}>
+              <View style={styles.todoHeaderRow}>
+                <View style={styles.todoLeft}>
+                  <View style={styles.todoCheckbox} />
+                  <Text style={styles.todoText}>할 일</Text>
+                </View>
+                <Text style={styles.todoCountText}>2 / 5</Text>
+              </View>
+            </View>
           </Animated.View>
         </Animated.View>
       </View>
@@ -109,18 +120,66 @@ const styles = StyleSheet.create({
   },
   card: {
     position: "absolute",
-    padding: 20,
-    paddingBottom: 28,
+    padding: 30,
     backgroundColor: "#FFFFFF",
   },
   dateText: {
-    fontSize: 14,
-    fontWeight: "600",
+    fontSize: 16,
+    fontWeight: "700",
     marginBottom: 16,
+    marginLeft: 3,
+  },
+  holidayCard: {
+    width: "100%",
+    borderRadius: 12,
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    backgroundColor: "#FEECEC",
+    marginVertical: 6,
   },
   holidayText: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: "500",
-    marginBottom: 12,
+    color: "#DC2626",
+  },
+  todoCard: {
+    width: "100%",
+    borderRadius: 12,
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    backgroundColor: "#F3F8FF",
+    marginVertical: 6,
+  },
+  todoHeaderRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    textAlign: "center",
+    textAlignVertical: "center",
+  },
+  todoLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    textAlign: "center",
+    textAlignVertical: "center",
+    flexShrink: 1,
+  },
+  todoCheckbox: {
+    width: 18,
+    height: 18,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: "#9CA3AF",
+    backgroundColor: "#FFFFFF",
+    marginRight: 10,
+  },
+  todoText: {
+    fontSize: 13,
+    fontWeight: "500",
+  },
+  todoCountText: {
+    fontSize: 12,
+    color: "#6B7280",
   },
 });
