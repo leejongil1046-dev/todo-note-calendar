@@ -1,5 +1,6 @@
 import { AppTopBar } from "@/components/app-top-bar";
 import { Calendar } from "@/components/calendar/calendar";
+import { DateDetailModal } from "@/components/date-detail-modal";
 import { getKoreaTodayParts } from "@/lib/date/get-korea-today-parts";
 import {
   buildHolidaySeedByYears,
@@ -7,9 +8,10 @@ import {
   getHolidayMapForYears,
   HolidayMap,
 } from "@/lib/holidays-cache";
+import { useFocusEffect } from "@react-navigation/native";
 import Constants from "expo-constants";
-import React, { useEffect, useState } from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
+import React, { useEffect, useRef, useState } from "react";
+import { Animated, ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 type Todo = {
@@ -33,6 +35,14 @@ export default function CalendarScreen() {
   const [selectedDate, setSelectedDate] = useState(koreaToday.dateString);
   const today = new Date();
   const [holidayMap, setHolidayMap] = useState<HolidayMap | null>(null);
+  const [isDateCardOpen, setIsDateCardOpen] = useState(false);
+  const [detailRect, setDetailRect] = useState<{
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  } | null>(null);
+  const detailProgress = useRef(new Animated.Value(0)).current;
   // const [todosByDate, setTodosByDate] = useState<TodosByDate>({});
   // const [input, setInput] = useState("");
 
@@ -56,7 +66,46 @@ export default function CalendarScreen() {
     load();
   }, []);
 
-  // const todos = todosByDate[selectedDate] ?? [];
+  // 다른 탭으로 이동하거나 이 화면이 blur 될 때 상세 카드 닫기
+  useFocusEffect(
+    React.useCallback(() => {
+      return () => {
+        setIsDateCardOpen(false);
+        setDetailRect(null);
+        detailProgress.setValue(0);
+      };
+    }, [detailProgress]),
+  );
+
+  const openDetailCard = (rect: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  }) => {
+    setDetailRect(rect);
+    setIsDateCardOpen(true);
+    detailProgress.setValue(0);
+
+    Animated.timing(detailProgress, {
+      toValue: 1,
+      duration: 220,
+      useNativeDriver: false, // 레이아웃 속성 애니메이션
+    }).start();
+  };
+
+  const closeDetailCard = () => {
+    Animated.timing(detailProgress, {
+      toValue: 0,
+      duration: 180,
+      useNativeDriver: false,
+    }).start(({ finished }) => {
+      if (finished) {
+        setIsDateCardOpen(false);
+        setDetailRect(null);
+      }
+    });
+  };
 
   // const addTodo = () => {
   //   if (!input.trim()) return;
@@ -106,12 +155,24 @@ export default function CalendarScreen() {
             initialMonth={koreaToday.month}
             selectedDate={selectedDate}
             holidayMap={holidayMap ?? undefined}
-            onPressDate={(dateString) => {
+            onPressDate={(dateString, layout) => {
+              if (dateString === selectedDate && layout) {
+                openDetailCard(layout);
+                return;
+              }
               setSelectedDate(dateString);
             }}
           />
         </ScrollView>
       </View>
+
+      <DateDetailModal
+        visible={isDateCardOpen}
+        selectedDate={selectedDate}
+        rect={detailRect}
+        progress={detailProgress}
+        onRequestClose={closeDetailCard}
+      />
     </SafeAreaView>
   );
 }
@@ -140,4 +201,22 @@ const styles = StyleSheet.create({
   todoText: { fontSize: 16 },
   todoDone: { textDecorationLine: "line-through", color: "#9ca3af" },
   emptyText: { color: "#9ca3af" },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: "flex-end",
+    backgroundColor: "rgba(0,0,0,0.2)",
+  },
+  modalContent: {
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 20,
+    paddingBottom: 32,
+    backgroundColor: "#FFFFFF",
+    minHeight: 260,
+  },
+  modalDateText: {
+    fontSize: 18,
+    fontWeight: "600",
+    marginBottom: 16,
+  },
 });

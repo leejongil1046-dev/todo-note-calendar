@@ -11,7 +11,10 @@ type CalendarProps = {
   initialYear: number;
   initialMonth: number;
   selectedDate?: string;
-  onPressDate?: (dateString: string) => void;
+  onPressDate?: (
+    dateString: string,
+    layoutInWindow?: { x: number; y: number; width: number; height: number },
+  ) => void;
   holidayMap?: HolidayMap;
 };
 
@@ -49,9 +52,12 @@ export const Calendar = ({
     return selectedDate;
   }, [selectedDate]);
 
-  const handlePressDate = (cell: CalendarCellData) => {
+  const handlePressDate = (
+    cell: CalendarCellData,
+    layoutInWindow?: { x: number; y: number; width: number; height: number },
+  ) => {
     if (cell.inCurrentMonth) {
-      onPressDate?.(cell.dateString);
+      onPressDate?.(cell.dateString, layoutInWindow);
       return;
     }
 
@@ -61,7 +67,7 @@ export const Calendar = ({
 
     setCurrentYear(newYear);
     setCurrentMonth(newMonth);
-    onPressDate?.(cell.dateString);
+    onPressDate?.(cell.dateString, layoutInWindow);
   };
 
   return (

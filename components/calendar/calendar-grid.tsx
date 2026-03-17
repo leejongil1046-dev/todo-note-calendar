@@ -9,7 +9,10 @@ type CalendarGridProps = {
   year: number;
   month: number;
   selectedDate?: string;
-  onPressDate?: (cell: CalendarCellData) => void;
+  onPressDate?: (
+    cell: CalendarCellData,
+    layoutInWindow?: { x: number; y: number; width: number; height: number },
+  ) => void;
   holidayMap?: HolidayMap;
 };
 

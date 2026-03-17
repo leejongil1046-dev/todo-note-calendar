@@ -1,13 +1,15 @@
 import { StyleSheet, View } from "react-native";
 
 import type { CalendarCellData } from "@/lib/calendar/calendar-types";
-
 import { HolidayMap } from "@/lib/holidays-cache";
 import { CalendarCell } from "./calendar-cell";
 
 type CalendarWeekRowProps = {
   week: CalendarCellData[];
-  onPressDate?: (cell: CalendarCellData) => void;
+  onPressDate?: (
+    cell: CalendarCellData,
+    layoutInWindow?: { x: number; y: number; width: number; height: number },
+  ) => void;
   holidayMap?: HolidayMap;
 };
 

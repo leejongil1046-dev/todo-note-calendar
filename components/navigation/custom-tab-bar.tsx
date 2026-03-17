@@ -200,16 +200,18 @@ export function CustomTabBar({
 const styles = StyleSheet.create({
   outer: {
     backgroundColor: "#FFFFFF",
+    width: "100%",
   },
   inner: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
+    width: "90%",
+    marginHorizontal: "auto",
     height: 70,
     paddingTop: 20,
     paddingHorizontal: 8,
     marginBottom: 20,
-    marginHorizontal: 20,
     borderRadius: 30,
     backgroundColor: "#F3F8FF",
 

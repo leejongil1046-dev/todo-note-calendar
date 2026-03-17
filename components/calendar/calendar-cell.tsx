@@ -1,3 +1,4 @@
+import React, { useRef } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { HolidayItem } from "@/lib/api/holidays";
@@ -6,7 +7,10 @@ import type { CalendarCellData } from "@/lib/calendar/calendar-types";
 type CalendarCellProps = {
   cell: CalendarCellData;
   weekdayIndex: number;
-  onPress?: (cell: CalendarCellData) => void;
+  onPress?: (
+    cell: CalendarCellData,
+    layoutInWindow?: { x: number; y: number; width: number; height: number },
+  ) => void;
   holiday?: HolidayItem;
 };
 
@@ -16,8 +20,19 @@ export const CalendarCell = ({
   onPress,
   holiday,
 }: CalendarCellProps) => {
+  const ref = useRef<View | null>(null);
+
   const handlePress = () => {
-    onPress?.(cell);
+    if (!onPress) return;
+
+    if (ref.current?.measureInWindow) {
+      ref.current.measureInWindow((x, y, width, height) => {
+        onPress(cell, { x, y, width, height });
+      });
+      return;
+    }
+
+    onPress(cell);
   };
 
   const isSunday = weekdayIndex === 0;
@@ -27,6 +42,7 @@ export const CalendarCell = ({
 
   return (
     <Pressable
+      ref={ref}
       style={[
         styles.cell,
         cell.isSelected && styles.isSelectedCell,
