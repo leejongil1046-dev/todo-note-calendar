@@ -1,5 +1,11 @@
-import { useMemo, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { useMemo, useRef, useState } from "react";
+import {
+  PanResponder,
+  StyleSheet,
+  View,
+  type GestureResponderEvent,
+  type PanResponderGestureState,
+} from "react-native";
 
 import type { CalendarCellData } from "@/lib/calendar/calendar-types";
 import { HolidayMap } from "@/lib/holidays-cache";
@@ -29,23 +35,23 @@ export const Calendar = ({
   const [currentMonth, setCurrentMonth] = useState(initialMonth);
 
   const handlePressPrevMonth = () => {
-    if (currentMonth === 1) {
-      setCurrentYear((prev) => prev - 1);
-      setCurrentMonth(12);
-      return;
-    }
-
-    setCurrentMonth((prev) => prev - 1);
+    setCurrentMonth((prevMonth) => {
+      if (prevMonth === 1) {
+        setCurrentYear((prevYear) => prevYear - 1);
+        return 12;
+      }
+      return prevMonth - 1;
+    });
   };
 
   const handlePressNextMonth = () => {
-    if (currentMonth === 12) {
-      setCurrentYear((prev) => prev + 1);
-      setCurrentMonth(1);
-      return;
-    }
-
-    setCurrentMonth((prev) => prev + 1);
+    setCurrentMonth((prevMonth) => {
+      if (prevMonth === 12) {
+        setCurrentYear((prevYear) => prevYear + 1);
+        return 1;
+      }
+      return prevMonth + 1;
+    });
   };
 
   const visibleSelectedDate = useMemo(() => {
@@ -70,6 +76,34 @@ export const Calendar = ({
     onPressDate?.(cell.dateString, layoutInWindow);
   };
 
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (
+        _e: GestureResponderEvent,
+        gestureState: PanResponderGestureState,
+      ) => {
+        const { dx, dy } = gestureState;
+        // 가로 스와이프가 세로보다 크고, 일정 이상 움직였을 때만
+        return Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy);
+      },
+      onPanResponderRelease: (
+        _e: GestureResponderEvent,
+        gestureState: PanResponderGestureState,
+      ) => {
+        const { dx } = gestureState;
+        const threshold = 40;
+
+        if (dx > threshold) {
+          // 오른쪽으로 스와이프 → 이전 달
+          handlePressPrevMonth();
+        } else if (dx < -threshold) {
+          // 왼쪽으로 스와이프 → 다음 달
+          handlePressNextMonth();
+        }
+      },
+    }),
+  ).current;
+
   return (
     <View style={styles.container}>
       <CalendarMonthHeader
@@ -81,13 +115,15 @@ export const Calendar = ({
 
       <CalendarWeekdayHeader />
 
-      <CalendarGrid
-        year={currentYear}
-        month={currentMonth}
-        selectedDate={visibleSelectedDate}
-        onPressDate={handlePressDate}
-        holidayMap={holidayMap}
-      />
+      <View {...panResponder.panHandlers}>
+        <CalendarGrid
+          year={currentYear}
+          month={currentMonth}
+          selectedDate={visibleSelectedDate}
+          onPressDate={handlePressDate}
+          holidayMap={holidayMap}
+        />
+      </View>
     </View>
   );
 };
