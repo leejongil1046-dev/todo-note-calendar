@@ -35,13 +35,13 @@ function TabItem({
     Animated.parallel([
       Animated.spring(scale, {
         toValue: focused ? 1.04 : 1,
-        friction: 4,
+        friction: 5,
         tension: 50,
         useNativeDriver: true,
       }),
       Animated.spring(translateY, {
         toValue: focused ? -18 : 0,
-        friction: 4,
+        friction: 5,
         tension: 50,
         useNativeDriver: true,
       }),
