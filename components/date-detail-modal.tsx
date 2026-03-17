@@ -11,6 +11,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { TodoCard } from "./todo-card";
 
 type Rect = { x: number; y: number; width: number; height: number };
 
@@ -92,15 +93,7 @@ export function DateDetailModal({
               </View>
             )}
 
-            <View style={styles.todoCard}>
-              <View style={styles.todoHeaderRow}>
-                <View style={styles.todoLeft}>
-                  <View style={styles.todoCheckbox} />
-                  <Text style={styles.todoText}>할 일</Text>
-                </View>
-                <Text style={styles.todoCountText}>2 / 5</Text>
-              </View>
-            </View>
+            <TodoCard label="할 일" completedCount={2} totalCount={5} />
           </Animated.View>
         </Animated.View>
       </View>
@@ -141,45 +134,5 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "500",
     color: "#DC2626",
-  },
-  todoCard: {
-    width: "100%",
-    borderRadius: 12,
-    paddingVertical: 15,
-    paddingHorizontal: 20,
-    backgroundColor: "#F3F8FF",
-    marginVertical: 6,
-  },
-  todoHeaderRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    textAlign: "center",
-    textAlignVertical: "center",
-  },
-  todoLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    textAlign: "center",
-    textAlignVertical: "center",
-    flexShrink: 1,
-  },
-  todoCheckbox: {
-    width: 18,
-    height: 18,
-    borderRadius: 6,
-    borderWidth: 2,
-    borderColor: "#9CA3AF",
-    backgroundColor: "#FFFFFF",
-    marginRight: 10,
-  },
-  todoText: {
-    fontSize: 13,
-    fontWeight: "500",
-  },
-  todoCountText: {
-    fontSize: 12,
-    color: "#6B7280",
   },
 });
