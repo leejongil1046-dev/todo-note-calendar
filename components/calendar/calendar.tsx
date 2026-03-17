@@ -1,9 +1,6 @@
 import { useMemo, useState } from "react";
 import { StyleSheet, View } from "react-native";
-import {
-  PanGestureHandler,
-  type PanGestureHandlerGestureEvent,
-} from "react-native-gesture-handler";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
 
 import type { CalendarCellData } from "@/lib/calendar/calendar-types";
 import { HolidayMap } from "@/lib/holidays-cache";
@@ -52,9 +49,7 @@ export const Calendar = ({
     });
   };
 
-  const visibleSelectedDate = useMemo(() => {
-    return selectedDate;
-  }, [selectedDate]);
+  const visibleSelectedDate = useMemo(() => selectedDate, [selectedDate]);
 
   const handlePressDate = (
     cell: CalendarCellData,
@@ -67,25 +62,31 @@ export const Calendar = ({
 
     const clicked = new Date(`${cell.dateString}T00:00:00`);
     const newYear = clicked.getFullYear();
-    const newMonth = clicked.getMonth() + 1; // Calendar는 1~12 사용
+    const newMonth = clicked.getMonth() + 1;
 
     setCurrentYear(newYear);
     setCurrentMonth(newMonth);
     onPressDate?.(cell.dateString, layoutInWindow);
   };
 
-  const handlePanEnd = (event: PanGestureHandlerGestureEvent) => {
-    const { translationX } = event.nativeEvent;
+  const handleSwipeEnd = (translationX: number) => {
     const threshold = 40;
 
     if (translationX > threshold) {
-      // 오른쪽으로 스와이프 → 다음 달
       handlePressNextMonth();
     } else if (translationX < -threshold) {
-      // 왼쪽으로 스와이프 → 이전 달
       handlePressPrevMonth();
     }
   };
+
+  const panGesture = Gesture.Pan()
+    .runOnJS(true)
+    .activeOffsetX([-10, 10])
+    .failOffsetY([-10, 10])
+    .maxPointers(1)
+    .onEnd((event) => {
+      handleSwipeEnd(event.translationX);
+    });
 
   return (
     <View style={styles.container}>
@@ -98,11 +99,7 @@ export const Calendar = ({
 
       <CalendarWeekdayHeader />
 
-      <PanGestureHandler
-        onHandlerStateChange={handlePanEnd}
-        activeOffsetX={[-10, 10]} // |dx| > 10 이어야 인식
-        failOffsetY={[-10, 10]} // 세로 움직임 크면 스와이프 포기
-      >
+      <GestureDetector gesture={panGesture}>
         <View>
           <CalendarGrid
             year={currentYear}
@@ -112,7 +109,7 @@ export const Calendar = ({
             holidayMap={holidayMap}
           />
         </View>
-      </PanGestureHandler>
+      </GestureDetector>
     </View>
   );
 };
