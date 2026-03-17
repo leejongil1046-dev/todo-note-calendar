@@ -34,14 +34,14 @@ function TabItem({
   useEffect(() => {
     Animated.parallel([
       Animated.spring(scale, {
-        toValue: focused ? 1.05 : 1,
-        friction: 3,
+        toValue: focused ? 1.04 : 1,
+        friction: 4,
         tension: 50,
         useNativeDriver: true,
       }),
       Animated.spring(translateY, {
-        toValue: focused ? -20 : 0,
-        friction: 3,
+        toValue: focused ? -18 : 0,
+        friction: 4,
         tension: 50,
         useNativeDriver: true,
       }),
@@ -63,7 +63,7 @@ function TabItem({
       return (
         <FontAwesome5
           name="calendar-alt"
-          size={30}
+          size={28}
           color={focused ? "#FFFFFF" : color}
         />
       );
@@ -73,7 +73,7 @@ function TabItem({
       return (
         <Feather
           name="check-square"
-          size={30}
+          size={28}
           color={focused ? "#FFFFFF" : color}
         />
       );
@@ -82,7 +82,7 @@ function TabItem({
     return (
       <FontAwesome
         name="user-circle"
-        size={30}
+        size={28}
         color={focused ? "#FFFFFF" : color}
       />
     );
@@ -208,8 +208,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     width: "90%",
     marginHorizontal: "auto",
-    height: 70,
-    paddingTop: 20,
+    height: 62,
+    paddingTop: 26,
     paddingHorizontal: 8,
     marginBottom: 20,
     borderRadius: 30,
@@ -230,16 +230,16 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   iconWrap: {
-    width: 60,
-    height: 60,
+    width: 56,
+    height: 56,
     alignItems: "center",
     justifyContent: "center",
   },
   iconFrame: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    borderWidth: 6,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    borderWidth: 5,
     borderColor: "#F3F8FF",
     alignItems: "center",
     justifyContent: "center",
@@ -247,9 +247,9 @@ const styles = StyleSheet.create({
   },
   activeBubble: {
     position: "absolute",
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     backgroundColor: "#2563EB",
   },
   label: {

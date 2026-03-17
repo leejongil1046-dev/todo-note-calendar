@@ -37,7 +37,7 @@ export function DateDetailModal({
   const BOTTOM_OFFSET = insets.bottom;
 
   const finalTop = Platform.OS === "ios" ? insets.top + 52 : 52;
-  const finalHeight = screenHeight - TOP_OFFSET - BOTTOM_OFFSET - 52 - 90 - 30;
+  const finalHeight = screenHeight - TOP_OFFSET - BOTTOM_OFFSET - 52 - 82 - 30;
 
   if (!visible || !rect) return null;
 
