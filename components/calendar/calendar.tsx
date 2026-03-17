@@ -1,11 +1,9 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
+import { StyleSheet, View } from "react-native";
 import {
-  PanResponder,
-  StyleSheet,
-  View,
-  type GestureResponderEvent,
-  type PanResponderGestureState,
-} from "react-native";
+  PanGestureHandler,
+  type PanGestureHandlerGestureEvent,
+} from "react-native-gesture-handler";
 
 import type { CalendarCellData } from "@/lib/calendar/calendar-types";
 import { HolidayMap } from "@/lib/holidays-cache";
@@ -76,33 +74,18 @@ export const Calendar = ({
     onPressDate?.(cell.dateString, layoutInWindow);
   };
 
-  const panResponder = useRef(
-    PanResponder.create({
-      onMoveShouldSetPanResponder: (
-        _e: GestureResponderEvent,
-        gestureState: PanResponderGestureState,
-      ) => {
-        const { dx, dy } = gestureState;
-        // 가로 스와이프가 세로보다 크고, 일정 이상 움직였을 때만
-        return Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy);
-      },
-      onPanResponderRelease: (
-        _e: GestureResponderEvent,
-        gestureState: PanResponderGestureState,
-      ) => {
-        const { dx } = gestureState;
-        const threshold = 40;
+  const handlePanEnd = (event: PanGestureHandlerGestureEvent) => {
+    const { translationX } = event.nativeEvent;
+    const threshold = 40;
 
-        if (dx > threshold) {
-          // 오른쪽으로 스와이프 → 이전 달
-          handlePressPrevMonth();
-        } else if (dx < -threshold) {
-          // 왼쪽으로 스와이프 → 다음 달
-          handlePressNextMonth();
-        }
-      },
-    }),
-  ).current;
+    if (translationX > threshold) {
+      // 오른쪽으로 스와이프 → 다음 달
+      handlePressNextMonth();
+    } else if (translationX < -threshold) {
+      // 왼쪽으로 스와이프 → 이전 달
+      handlePressPrevMonth();
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -115,15 +98,21 @@ export const Calendar = ({
 
       <CalendarWeekdayHeader />
 
-      <View {...panResponder.panHandlers}>
-        <CalendarGrid
-          year={currentYear}
-          month={currentMonth}
-          selectedDate={visibleSelectedDate}
-          onPressDate={handlePressDate}
-          holidayMap={holidayMap}
-        />
-      </View>
+      <PanGestureHandler
+        onHandlerStateChange={handlePanEnd}
+        activeOffsetX={[-10, 10]} // |dx| > 10 이어야 인식
+        failOffsetY={[-10, 10]} // 세로 움직임 크면 스와이프 포기
+      >
+        <View>
+          <CalendarGrid
+            year={currentYear}
+            month={currentMonth}
+            selectedDate={visibleSelectedDate}
+            onPressDate={handlePressDate}
+            holidayMap={holidayMap}
+          />
+        </View>
+      </PanGestureHandler>
     </View>
   );
 };

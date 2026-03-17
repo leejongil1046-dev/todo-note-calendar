@@ -5,7 +5,6 @@ import { fetchNationalHolidays, HolidayItem } from "./api/holidays";
 export type HolidayMap = Record<string, HolidayItem>;
 
 const getCacheKey = (year: number) => `holidays:${year}`;
-const getUpdatedKey = (year: number) => `holidays-updated:${year}`;
 
 const SEED_VERSION = "v1"; // seed 바꿀 때마다 v2, v3 처럼만 변경
 const getSeedVersionKey = (year: number) => `holidays-seed-version:${year}`;
