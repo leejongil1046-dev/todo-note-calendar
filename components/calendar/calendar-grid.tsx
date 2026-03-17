@@ -1,8 +1,8 @@
 import { StyleSheet, View } from "react-native";
 
-import type { CalendarCellData } from "@/lib/calendar/calendar-types";
 import { buildMonthCells, chunkMonthCells } from "@/lib/calendar/date-utils";
 import { HolidayMap } from "@/lib/holidays-cache";
+import type { CalendarCellData } from "@/types/calendar-types";
 import { CalendarWeekRow } from "./calendar-week-row";
 
 type CalendarGridProps = {

@@ -1,6 +1,7 @@
 import { AppTopBar } from "@/components/app-top-bar";
 import { Calendar } from "@/components/calendar/calendar";
 import { DateDetailModal } from "@/components/date-detail-modal";
+import { buildDateMeta } from "@/lib/calendar/date-utils";
 import { getKoreaTodayParts } from "@/lib/date/get-korea-today-parts";
 import {
   buildHolidaySeedByYears,
@@ -13,16 +14,6 @@ import React, { useEffect, useRef, useState } from "react";
 import { Animated, ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-type Todo = {
-  id: string;
-  text: string;
-  done: boolean;
-};
-
-type TodosByDate = {
-  [date: string]: Todo[];
-};
-
 const SERVICE_KEY =
   (Constants.expoConfig?.extra?.holidayApiKey as string) ?? "";
 
@@ -32,7 +23,6 @@ export default function CalendarScreen() {
   const koreaToday = getKoreaTodayParts();
 
   const [selectedDate, setSelectedDate] = useState(koreaToday.dateString);
-  const today = new Date();
   const [holidayMap, setHolidayMap] = useState<HolidayMap | null>(null);
   const [isDateCardOpen, setIsDateCardOpen] = useState(false);
   const [detailRect, setDetailRect] = useState<{
@@ -172,7 +162,7 @@ export default function CalendarScreen() {
 
       <DateDetailModal
         visible={isDateCardOpen}
-        selectedDate={selectedDate}
+        meta={buildDateMeta(selectedDate, holidayMap)}
         rect={detailRect}
         progress={detailProgress}
         contentOpacity={contentOpacity}

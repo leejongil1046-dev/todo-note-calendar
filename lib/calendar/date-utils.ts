@@ -1,4 +1,5 @@
-import type { CalendarCellData } from "./calendar-types";
+import type { CalendarCellData, DateMeta } from "../../types/calendar-types";
+import type { HolidayMap } from "../holidays-cache";
 
 export const getDaysInMonth = (year: number, month: number) => {
   return new Date(year, month, 0).getDate();
@@ -197,4 +198,36 @@ export const chunkMonthCells = (cells: CalendarCellData[]) => {
   }
 
   return weeks;
+};
+
+export const buildDateMeta = (
+  dateString: string,
+  holidayMap?: HolidayMap | null,
+): DateMeta => {
+  const [yearStr, monthStr, dayStr] = dateString.split("-");
+  const year = Number(yearStr);
+  const month = Number(monthStr);
+  const day = Number(dayStr);
+
+  const d = new Date(`${dateString}T00:00:00`);
+  const weekdayIndex = d.getDay(); // 0=일, 1=월...
+  const weekdayLabel = ["일", "월", "화", "수", "목", "금", "토"][weekdayIndex];
+
+  const todayStr = getTodayDateString();
+  const isToday = dateString === todayStr;
+
+  const holiday = holidayMap?.[dateString];
+  const isHoliday = !!holiday?.isHoliday;
+  const holidayName = holiday?.name;
+
+  return {
+    dateString,
+    year,
+    month,
+    day,
+    weekdayLabel,
+    isToday,
+    isHoliday,
+    holidayName,
+  };
 };

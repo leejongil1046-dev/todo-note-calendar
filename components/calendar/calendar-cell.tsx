@@ -2,7 +2,7 @@ import React, { useRef } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { HolidayItem } from "@/lib/api/holidays";
-import type { CalendarCellData } from "@/lib/calendar/calendar-types";
+import type { CalendarCellData } from "@/types/calendar-types";
 
 type CalendarCellProps = {
   cell: CalendarCellData;

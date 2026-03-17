@@ -2,8 +2,8 @@ import { useMemo, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 
-import type { CalendarCellData } from "@/lib/calendar/calendar-types";
 import { HolidayMap } from "@/lib/holidays-cache";
+import type { CalendarCellData } from "@/types/calendar-types";
 import { CalendarGrid } from "./calendar-grid";
 import { CalendarMonthHeader } from "./calendar-month-header";
 import { CalendarWeekdayHeader } from "./calendar-weekday-header";

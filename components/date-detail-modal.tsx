@@ -1,3 +1,4 @@
+import type { DateMeta } from "@/types/calendar-types";
 import { Text } from "@react-navigation/elements";
 import React from "react";
 import {
@@ -15,19 +16,19 @@ type Rect = { x: number; y: number; width: number; height: number };
 
 type DateDetailModalProps = {
   visible: boolean;
-  selectedDate: string;
   rect: Rect | null;
   progress: Animated.Value;
   contentOpacity: Animated.Value;
+  meta: DateMeta | null;
   onRequestClose: () => void;
 };
 
 export function DateDetailModal({
   visible,
-  selectedDate,
   rect,
   progress,
   contentOpacity,
+  meta,
   onRequestClose,
 }: DateDetailModalProps) {
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
@@ -39,7 +40,7 @@ export function DateDetailModal({
   const finalTop = Platform.OS === "ios" ? insets.top + 52 : 52;
   const finalHeight = screenHeight - TOP_OFFSET - BOTTOM_OFFSET - 52 - 82 - 30;
 
-  if (!visible || !rect) return null;
+  if (!visible || !rect || !meta) return null;
 
   return (
     <Modal
@@ -76,14 +77,19 @@ export function DateDetailModal({
               }),
               borderRadius: progress.interpolate({
                 inputRange: [0, 1],
-                outputRange: [9, 24], // 0일 때 9 → 1일 때 24
+                outputRange: [9, 24],
               }),
             },
           ]}
         >
           <Animated.View style={{ opacity: contentOpacity }}>
-            <Text style={styles.dateText}>{selectedDate}</Text>
-            {/* 나중에 본문/리스트도 여기 안에 */}
+            <Text style={styles.dateText}>
+              {meta.year}년 {meta.month}월 {meta.day}일 ({meta.weekdayLabel})
+            </Text>
+            {meta.isHoliday && meta.holidayName && (
+              <Text style={styles.holidayText}>{meta.holidayName}</Text>
+            )}
+            {/* TODO: 여기 아래에 투두 리스트/기념일 등을 배치 */}
           </Animated.View>
         </Animated.View>
       </View>
@@ -108,8 +114,13 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
   },
   dateText: {
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: "600",
     marginBottom: 16,
+  },
+  holidayText: {
+    fontSize: 14,
+    fontWeight: "500",
+    marginBottom: 12,
   },
 });
