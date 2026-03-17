@@ -1,4 +1,6 @@
-import { StyleSheet, Text, View } from "react-native";
+import { Image } from "expo-image";
+import React, { useState } from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 type TodoCardProps = {
   label: string;
@@ -7,12 +9,27 @@ type TodoCardProps = {
 };
 
 export function TodoCard({ label, completedCount, totalCount }: TodoCardProps) {
+  const [done, setDone] = useState(false);
+
   return (
     <View style={styles.todoCard}>
       <View style={styles.todoHeaderRow}>
         <View style={styles.todoLeft}>
-          <View style={styles.todoCheckbox} />
-          <Text style={styles.todoText}>{label}</Text>
+          <Pressable
+            style={styles.todoCheckbox}
+            onPress={() => setDone((prev) => !prev)}
+          >
+            {done && (
+              <Image
+                source={require("@/assets/images/check.svg")}
+                style={styles.todoCheckIcon}
+                contentFit="contain"
+              />
+            )}
+          </Pressable>
+          <Text style={[styles.todoText, done && styles.todoTextDone]}>
+            {label}
+          </Text>
         </View>
         <Text style={styles.todoCountText}>
           {completedCount} / {totalCount}
@@ -44,20 +61,31 @@ const styles = StyleSheet.create({
   todoCheckbox: {
     width: 18,
     height: 18,
-    borderRadius: 6,
-    borderWidth: 2,
-    borderColor: "#9CA3AF",
+    borderRadius: 3,
+    borderWidth: 1,
+    borderColor: "#000000",
     backgroundColor: "#FFFFFF",
     marginRight: 10,
+    overflow: "hidden",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  todoCheckIcon: {
+    width: 19,
+    height: 19,
   },
   todoText: {
     fontSize: 13,
     fontWeight: "500",
     paddingBottom: 2,
   },
+  todoTextDone: {
+    textDecorationLine: "line-through",
+    color: "#6B7280",
+  },
   todoCountText: {
     fontSize: 12,
     color: "#6B7280",
-    paddingBottom: 2,
+    paddingBottom: 1,
   },
 });
