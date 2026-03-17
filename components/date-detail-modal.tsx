@@ -1,3 +1,4 @@
+import { Text } from "@react-navigation/elements";
 import React from "react";
 import {
   Animated,
@@ -5,7 +6,6 @@ import {
   Platform,
   Pressable,
   StyleSheet,
-  Text,
   useWindowDimensions,
   View,
 } from "react-native";
@@ -18,6 +18,7 @@ type DateDetailModalProps = {
   selectedDate: string;
   rect: Rect | null;
   progress: Animated.Value;
+  contentOpacity: Animated.Value;
   onRequestClose: () => void;
 };
 
@@ -26,6 +27,7 @@ export function DateDetailModal({
   selectedDate,
   rect,
   progress,
+  contentOpacity,
   onRequestClose,
 }: DateDetailModalProps) {
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
@@ -70,13 +72,19 @@ export function DateDetailModal({
               }),
               opacity: progress.interpolate({
                 inputRange: [0, 1],
-                outputRange: [0.9, 1],
+                outputRange: [0.8, 1],
+              }),
+              borderRadius: progress.interpolate({
+                inputRange: [0, 1],
+                outputRange: [9, 24], // 0일 때 9 → 1일 때 24
               }),
             },
           ]}
         >
-          <Text style={styles.dateText}>{selectedDate}</Text>
-          {/* TODO: 이 안에 기념일/국경일/투두 리스트를 배치 */}
+          <Animated.View style={{ opacity: contentOpacity }}>
+            <Text style={styles.dateText}>{selectedDate}</Text>
+            {/* 나중에 본문/리스트도 여기 안에 */}
+          </Animated.View>
         </Animated.View>
       </View>
     </Modal>
@@ -95,7 +103,6 @@ const styles = StyleSheet.create({
   },
   card: {
     position: "absolute",
-    borderRadius: 24,
     padding: 20,
     paddingBottom: 28,
     backgroundColor: "#FFFFFF",

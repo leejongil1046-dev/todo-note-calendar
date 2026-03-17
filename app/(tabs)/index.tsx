@@ -8,7 +8,6 @@ import {
   getHolidayMapForYears,
   HolidayMap,
 } from "@/lib/holidays-cache";
-import { useFocusEffect } from "@react-navigation/native";
 import Constants from "expo-constants";
 import React, { useEffect, useRef, useState } from "react";
 import { Animated, ScrollView, StyleSheet, View } from "react-native";
@@ -43,6 +42,7 @@ export default function CalendarScreen() {
     height: number;
   } | null>(null);
   const detailProgress = useRef(new Animated.Value(0)).current;
+  const contentOpacity = useRef(new Animated.Value(0)).current;
   // const [todosByDate, setTodosByDate] = useState<TodosByDate>({});
   // const [input, setInput] = useState("");
 
@@ -66,17 +66,6 @@ export default function CalendarScreen() {
     load();
   }, []);
 
-  // 다른 탭으로 이동하거나 이 화면이 blur 될 때 상세 카드 닫기
-  useFocusEffect(
-    React.useCallback(() => {
-      return () => {
-        setIsDateCardOpen(false);
-        setDetailRect(null);
-        detailProgress.setValue(0);
-      };
-    }, [detailProgress]),
-  );
-
   const openDetailCard = (rect: {
     x: number;
     y: number;
@@ -86,20 +75,35 @@ export default function CalendarScreen() {
     setDetailRect(rect);
     setIsDateCardOpen(true);
     detailProgress.setValue(0);
+    contentOpacity.setValue(0);
 
-    Animated.timing(detailProgress, {
-      toValue: 1,
-      duration: 220,
-      useNativeDriver: false, // 레이아웃 속성 애니메이션
-    }).start();
+    Animated.sequence([
+      Animated.timing(detailProgress, {
+        toValue: 1,
+        duration: 220,
+        useNativeDriver: false,
+      }),
+      Animated.timing(contentOpacity, {
+        toValue: 1,
+        duration: 150,
+        useNativeDriver: true,
+      }),
+    ]).start();
   };
 
   const closeDetailCard = () => {
-    Animated.timing(detailProgress, {
-      toValue: 0,
-      duration: 180,
-      useNativeDriver: false,
-    }).start(({ finished }) => {
+    Animated.sequence([
+      Animated.timing(contentOpacity, {
+        toValue: 0,
+        duration: 120,
+        useNativeDriver: true,
+      }),
+      Animated.timing(detailProgress, {
+        toValue: 0,
+        duration: 180,
+        useNativeDriver: false,
+      }),
+    ]).start(({ finished }) => {
       if (finished) {
         setIsDateCardOpen(false);
         setDetailRect(null);
@@ -171,6 +175,7 @@ export default function CalendarScreen() {
         selectedDate={selectedDate}
         rect={detailRect}
         progress={detailProgress}
+        contentOpacity={contentOpacity}
         onRequestClose={closeDetailCard}
       />
     </SafeAreaView>
