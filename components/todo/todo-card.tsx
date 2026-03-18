@@ -1,4 +1,4 @@
-import { Image } from "expo-image";
+import Check from "@/assets/images/check.svg";
 import React, { useRef, useState } from "react";
 import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
 
@@ -47,13 +47,7 @@ export function TodoCard({ label, completedCount, totalCount }: TodoCardProps) {
               onPress={() => setDone((prev) => !prev)}
             >
               <View style={styles.todoCheckbox}>
-                {done && (
-                  <Image
-                    source={require("@/assets/images/check.svg")}
-                    style={{ width: 19, height: 19 }}
-                    contentFit="contain"
-                  />
-                )}
+                {done && <Check width={19} height={19} />}
               </View>
             </Pressable>
             <Text style={[styles.todoText, done && styles.todoTextDone]}>

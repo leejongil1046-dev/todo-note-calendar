@@ -1,7 +1,7 @@
 // components/AppTopBar.tsx
+import Logo from "@/assets/images/logo.svg";
 import Entypo from "@expo/vector-icons/Entypo";
 import Feather from "@expo/vector-icons/Feather";
-import { Image } from "expo-image";
 import React from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 
@@ -27,11 +27,7 @@ export function AppTopBar({
 
       {/* 가운데: 로고 */}
       <View style={styles.center}>
-        <Image
-          source={require("@/assets/images/logo.svg")}
-          style={styles.logo}
-          contentFit="contain"
-        />
+        <Logo width={40} height={40} />
         {/* <Text style={styles.title}>Todo Note Calendar</Text> */}
       </View>
 

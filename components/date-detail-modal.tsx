@@ -1,11 +1,10 @@
+import Plus from "@/assets/images/plus.svg";
 import type { DateMeta } from "@/types/calendar-types";
 import { Text } from "@react-navigation/elements";
-import { Image } from "expo-image";
-import React from "react";
+import React, { useState } from "react";
 import {
   Animated,
   Modal,
-  Platform,
   Pressable,
   StyleSheet,
   useWindowDimensions,
@@ -13,6 +12,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { TodoCard } from "./todo/todo-card";
+import { TodoCreateModal } from "./todo/todo-create-modal";
 
 type Rect = { x: number; y: number; width: number; height: number };
 
@@ -33,13 +33,14 @@ export function DateDetailModal({
   meta,
   onRequestClose,
 }: DateDetailModalProps) {
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
   const insets = useSafeAreaInsets();
 
   const TOP_OFFSET = insets.top;
   const BOTTOM_OFFSET = insets.bottom;
 
-  const finalTop = Platform.OS === "ios" ? insets.top + 52 : 52;
+  const finalTop = insets.top + 52;
   const finalHeight = screenHeight - TOP_OFFSET - BOTTOM_OFFSET - 52 - 82 - 30;
 
   if (!visible || !rect || !meta) return null;
@@ -49,6 +50,7 @@ export function DateDetailModal({
       visible
       transparent
       animationType="none"
+      statusBarTranslucent
       onRequestClose={onRequestClose}
     >
       <View style={styles.overlay} pointerEvents="box-none">
@@ -100,14 +102,25 @@ export function DateDetailModal({
           <Animated.View
             style={[styles.floatingButton, { opacity: contentOpacity }]}
           >
-            <Image
-              source={require("@/assets/images/plus.svg")}
-              style={styles.plusIcon}
-              contentFit="contain"
-            />
+            <Pressable
+              style={styles.floatingButtonPressable}
+              onPress={() => setIsCreateModalOpen(true)}
+            >
+              <Plus width={50} height={50} />
+            </Pressable>
           </Animated.View>
         </Animated.View>
       </View>
+
+      <TodoCreateModal
+        visible={isCreateModalOpen}
+        selectedDate={meta.dateString}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSave={(payload) => {
+          console.log(payload);
+          // 여기서 상태 업데이트 또는 저장 처리
+        }}
+      />
     </Modal>
   );
 }
@@ -166,6 +179,13 @@ const styles = StyleSheet.create({
 
     // 그림자 (Android)
     elevation: 5,
+  },
+  floatingButtonPressable: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 25,
+    justifyContent: "center",
+    alignItems: "center",
   },
   plusIcon: {
     width: 50,
