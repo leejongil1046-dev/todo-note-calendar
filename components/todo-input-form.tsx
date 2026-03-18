@@ -1,61 +1,89 @@
 import { Image } from "expo-image";
 import React, { useRef, useState } from "react";
-import { Animated, Pressable, StyleSheet, View } from "react-native";
+import { Animated, Pressable, StyleSheet, TextInput } from "react-native";
 
-type TodoInputFormProps = {
-  label: string;
-  completedCount: number;
-  totalCount: number;
-};
+const COLLAPSED_HEIGHT = 50;
+const EXPANDED_HEIGHT = 180;
 
 export function TodoInputForm() {
   const [expanded, setExpanded] = useState(false);
-  const heightAnim = useRef(new Animated.Value(50)).current;
+
+  const heightAnim = useRef(new Animated.Value(COLLAPSED_HEIGHT)).current;
+  const opacityAnim = useRef(new Animated.Value(0)).current;
+
   const toggleExpand = () => {
-    const toValue = expanded ? 50 : 200;
-    Animated.timing(heightAnim, {
-      toValue,
-      duration: 200,
-      useNativeDriver: false,
-    }).start();
-    setExpanded((prev) => !prev);
+    const nextExpanded = !expanded;
+
+    Animated.parallel([
+      Animated.timing(heightAnim, {
+        toValue: nextExpanded ? EXPANDED_HEIGHT : COLLAPSED_HEIGHT,
+        duration: 220,
+        useNativeDriver: false,
+      }),
+      Animated.timing(opacityAnim, {
+        toValue: nextExpanded ? 1 : 0,
+        duration: 150,
+        useNativeDriver: false,
+      }),
+    ]).start();
+
+    setExpanded(nextExpanded);
   };
 
   return (
-    <Pressable onPress={toggleExpand}>
-      <Animated.View
-        style={[styles.todoInputCardWrapper, { height: heightAnim }]}
-      >
-        <View style={styles.todoInputCard}>
-          <Image
-            source={require("@/assets/images/plus.svg")}
-            style={{ width: 25, height: 25 }}
-            contentFit="contain"
-          />
-        </View>
-        {/* expanded === true일 때 아래에 입력 폼 추가 예정 */}
+    <Animated.View style={[styles.wrapper, { height: heightAnim }]}>
+      <Pressable style={styles.header} onPress={toggleExpand}>
+        <Image
+          source={require("@/assets/images/plus.svg")}
+          style={styles.plusIcon}
+          contentFit="contain"
+        />
+      </Pressable>
+
+      <Animated.View style={[styles.body, { opacity: opacityAnim }]}>
+        <TextInput
+          style={styles.mainInput}
+          placeholder="할 일을 입력하세요"
+          placeholderTextColor="#9CA3AF"
+          returnKeyType="done"
+        />
       </Animated.View>
-    </Pressable>
+    </Animated.View>
   );
 }
 
 const styles = StyleSheet.create({
-  todoInputCardWrapper: {
+  wrapper: {
     width: "100%",
-    height: 50,
     borderRadius: 12,
     backgroundColor: "#F4F4F5",
     marginVertical: 6,
-    justifyContent: "flex-start",
+    overflow: "hidden",
   },
-  todoInputCard: {
+  header: {
     width: "100%",
     height: 50,
-    borderRadius: 12,
-    paddingVertical: 15,
-    paddingHorizontal: 20,
-    backgroundColor: "#F4F4F5",
     justifyContent: "center",
     alignItems: "center",
+  },
+  plusIcon: {
+    width: 25,
+    height: 25,
+  },
+  body: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 16,
+  },
+  mainInput: {
+    width: "70%",
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    fontSize: 13,
+    color: "#111827",
+    backgroundColor: "#FFFFFF",
   },
 });
