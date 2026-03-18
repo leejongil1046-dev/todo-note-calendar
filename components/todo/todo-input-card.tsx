@@ -1,11 +1,11 @@
 import { Image } from "expo-image";
 import React, { useRef, useState } from "react";
-import { Animated, Pressable, StyleSheet, TextInput } from "react-native";
+import { Animated, Pressable, StyleSheet } from "react-native";
 
 const COLLAPSED_HEIGHT = 50;
-const EXPANDED_HEIGHT = 180;
+const EXPANDED_HEIGHT = 300;
 
-export function TodoInputForm() {
+export function TodoInputCard() {
   const [expanded, setExpanded] = useState(false);
 
   const heightAnim = useRef(new Animated.Value(COLLAPSED_HEIGHT)).current;
@@ -41,12 +41,7 @@ export function TodoInputForm() {
       </Pressable>
 
       <Animated.View style={[styles.body, { opacity: opacityAnim }]}>
-        <TextInput
-          style={styles.mainInput}
-          placeholder="할 일을 입력하세요"
-          placeholderTextColor="#9CA3AF"
-          returnKeyType="done"
-        />
+        {/* <TodoInputForm /> */}
       </Animated.View>
     </Animated.View>
   );
@@ -71,19 +66,6 @@ const styles = StyleSheet.create({
     height: 25,
   },
   body: {
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 16,
-  },
-  mainInput: {
-    width: "70%",
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    fontSize: 13,
-    color: "#111827",
-    backgroundColor: "#FFFFFF",
+    paddingBottom: 50,
   },
 });

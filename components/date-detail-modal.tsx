@@ -11,8 +11,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { TodoCard } from "./todo-card";
-import { TodoInputForm } from "./todo-input-form";
+import { TodoCard } from "./todo/todo-card";
 
 type Rect = { x: number; y: number; width: number; height: number };
 
@@ -94,7 +93,8 @@ export function DateDetailModal({
               </View>
             )}
             <TodoCard label="할 일" completedCount={2} totalCount={5} />
-            <TodoInputForm />
+            <TodoCard label="할 일" completedCount={2} totalCount={5} />
+            <TodoCard label="할 일" completedCount={2} totalCount={5} />
           </Animated.View>
         </Animated.View>
       </View>
