@@ -102,7 +102,7 @@ export function TodoCreateModal({
       onRequestClose={handleClose}
     >
       <View style={[styles.wrapper, { paddingTop: insets.top }]}>
-        <TodoCreateHeader onClose={handleClose} onSave={handleSave} />
+        <TodoCreateHeader onClose={handleClose} />
 
         <ScrollView
           style={styles.scrollView}

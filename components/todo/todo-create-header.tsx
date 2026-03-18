@@ -1,50 +1,51 @@
+import Chevron from "@/assets/images/chevron.svg";
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 type TodoCreateHeaderProps = {
   onClose: () => void;
-  onSave: () => void;
 };
 
-export function TodoCreateHeader({ onClose, onSave }: TodoCreateHeaderProps) {
+export function TodoCreateHeader({ onClose }: TodoCreateHeaderProps) {
   return (
     <View style={styles.header}>
-      <Pressable onPress={onClose} hitSlop={8}>
-        <Text style={styles.closeText}>닫기</Text>
-      </Pressable>
+      <View style={styles.leftGroup}>
+        <Pressable onPress={onClose} hitSlop={8} style={styles.backButton}>
+          <Chevron width={20} height={20} />
+        </Pressable>
 
-      <Text style={styles.headerTitle}>할 일 추가</Text>
-
-      <Pressable onPress={onSave} hitSlop={8}>
-        <Text style={styles.saveText}>저장</Text>
-      </Pressable>
+        <Text style={styles.headerTitle}>할 일 추가</Text>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   header: {
-    height: 52,
+    height: 56,
     paddingHorizontal: 20,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    justifyContent: "center",
     borderBottomWidth: 1,
     borderBottomColor: "#F3F4F6",
   },
-  headerTitle: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: "#111827",
+  leftGroup: {
+    flexDirection: "row",
+    alignItems: "center",
   },
-  closeText: {
-    fontSize: 14,
+  backButton: {
+    marginRight: 5,
+    paddingVertical: 4,
+    paddingRight: 4,
+  },
+  backIcon: {
+    fontSize: 24,
     fontWeight: "500",
-    color: "#6B7280",
+    color: "#111827",
+    lineHeight: 24,
   },
-  saveText: {
-    fontSize: 14,
+  headerTitle: {
+    fontSize: 18,
     fontWeight: "700",
-    color: "#0064E0",
+    color: "#000000",
   },
 });

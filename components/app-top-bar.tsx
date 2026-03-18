@@ -1,4 +1,3 @@
-// components/AppTopBar.tsx
 import Logo from "@/assets/images/logo.svg";
 import Entypo from "@expo/vector-icons/Entypo";
 import Feather from "@expo/vector-icons/Feather";
