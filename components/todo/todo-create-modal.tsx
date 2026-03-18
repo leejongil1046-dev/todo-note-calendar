@@ -1,11 +1,17 @@
 import React, { useMemo, useState } from "react";
-import { Modal, ScrollView, StyleSheet, View } from "react-native";
+import {
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import {
-  TodoCreateColorSection,
-  type CardColor,
-} from "./todo-create-color-section";
+import { TodoCategory } from "@/types/todo-types";
+import { TodoCreateCategoryAddModal } from "./todo-create-category-add-modal";
+import { TodoCreateCategorySection } from "./todo-create-category-section";
 import { TodoCreateContentSection } from "./todo-create-content-section";
 import {
   TodoCreateDateSection,
@@ -13,22 +19,26 @@ import {
 } from "./todo-create-date-section";
 import { TodoCreateHeader } from "./todo-create-header";
 import { TodoCreateTaskSection } from "./todo-create-task-section";
-import { TodoCreateTitleSection } from "./todo-create-title-section";
 
 type TodoCreateModalProps = {
   visible: boolean;
   selectedDate: string;
   onClose: () => void;
   onSave: (payload: {
-    title: string;
+    category: TodoCategory;
     tasks: string[];
     content: string;
     startDate: string;
     endDate: string;
     repeatType: RepeatType | null;
-    color: CardColor;
   }) => void;
 };
+
+const DEFAULT_CATEGORIES: TodoCategory[] = [
+  { id: "exercise", name: "운동", color: "#EAF4FF" },
+  { id: "study", name: "공부", color: "#EAFBF3" },
+  { id: "schedule", name: "약속", color: "#F3EEFF" },
+];
 
 export function TodoCreateModal({
   visible,
@@ -36,20 +46,29 @@ export function TodoCreateModal({
   onClose,
   onSave,
 }: TodoCreateModalProps) {
-  const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [taskInput, setTaskInput] = useState("");
   const [tasks, setTasks] = useState<string[]>([]);
   const [startDate, setStartDate] = useState(selectedDate);
   const [endDate, setEndDate] = useState(selectedDate);
   const [repeatType, setRepeatType] = useState<RepeatType>("daily");
-  const [selectedColor, setSelectedColor] = useState<CardColor>("#EAF4FF");
+
+  const [categories, setCategories] =
+    useState<TodoCategory[]>(DEFAULT_CATEGORIES);
+  const [selectedCategory, setSelectedCategory] = useState<TodoCategory | null>(
+    null,
+  );
+  const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
+  const [isAddCategoryModalVisible, setIsAddCategoryModalVisible] =
+    useState(false);
 
   const insets = useSafeAreaInsets();
 
   const isRepeatEnabled = useMemo(() => {
     return startDate !== selectedDate || endDate !== selectedDate;
   }, [startDate, endDate, selectedDate]);
+
+  const isSaveEnabled = selectedCategory !== null;
 
   const addTask = () => {
     const trimmed = taskInput.trim();
@@ -63,14 +82,15 @@ export function TodoCreateModal({
   };
 
   const resetForm = () => {
-    setTitle("");
     setContent("");
     setTaskInput("");
     setTasks([]);
     setStartDate(selectedDate);
     setEndDate(selectedDate);
     setRepeatType("daily");
-    setSelectedColor("#EAF4FF");
+    setSelectedCategory(null);
+    setIsCategoryDropdownOpen(false);
+    setIsAddCategoryModalVisible(false);
   };
 
   const handleClose = () => {
@@ -79,18 +99,31 @@ export function TodoCreateModal({
   };
 
   const handleSave = () => {
+    if (!selectedCategory) return;
+
     onSave({
-      title: title.trim(),
+      category: selectedCategory,
       tasks,
       content: content.trim(),
       startDate,
       endDate,
       repeatType: isRepeatEnabled ? repeatType : null,
-      color: selectedColor,
     });
 
     resetForm();
     onClose();
+  };
+
+  const handleSelectCategory = (category: TodoCategory) => {
+    setSelectedCategory(category);
+    setIsCategoryDropdownOpen(false);
+  };
+
+  const handleAddCategory = (category: TodoCategory) => {
+    setCategories((prev) => [...prev, category]);
+    setSelectedCategory(category);
+    setIsAddCategoryModalVisible(false);
+    setIsCategoryDropdownOpen(false);
   };
 
   return (
@@ -106,11 +139,24 @@ export function TodoCreateModal({
 
         <ScrollView
           style={styles.scrollView}
-          contentContainerStyle={styles.contentContainer}
+          contentContainerStyle={[
+            styles.contentContainer,
+            { paddingBottom: 120 + insets.bottom },
+          ]}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          <TodoCreateTitleSection title={title} onChangeTitle={setTitle} />
+          <TodoCreateCategorySection
+            selectedCategory={selectedCategory}
+            categories={categories}
+            isDropdownOpen={isCategoryDropdownOpen}
+            onToggleDropdown={() => setIsCategoryDropdownOpen((prev) => !prev)}
+            onSelectCategory={handleSelectCategory}
+            onPressAddCategory={() => {
+              setIsCategoryDropdownOpen(false);
+              setIsAddCategoryModalVisible(true);
+            }}
+          />
 
           <TodoCreateTaskSection
             taskInput={taskInput}
@@ -134,12 +180,33 @@ export function TodoCreateModal({
             onPressEndDate={() => {}}
             onChangeRepeatType={setRepeatType}
           />
-
-          <TodoCreateColorSection
-            selectedColor={selectedColor}
-            onSelectColor={setSelectedColor}
-          />
         </ScrollView>
+
+        <View style={[styles.bottomBar, { paddingBottom: 16 + insets.bottom }]}>
+          <Pressable
+            onPress={handleSave}
+            disabled={!isSaveEnabled}
+            style={[
+              styles.submitButton,
+              !isSaveEnabled && styles.submitButtonDisabled,
+            ]}
+          >
+            <Text
+              style={[
+                styles.submitButtonText,
+                !isSaveEnabled && styles.submitButtonTextDisabled,
+              ]}
+            >
+              저장
+            </Text>
+          </Pressable>
+        </View>
+
+        <TodoCreateCategoryAddModal
+          visible={isAddCategoryModalVisible}
+          onClose={() => setIsAddCategoryModalVisible(false)}
+          onSubmit={handleAddCategory}
+        />
       </View>
     </Modal>
   );
@@ -156,6 +223,30 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     padding: 20,
-    paddingBottom: 40,
+  },
+  bottomBar: {
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    backgroundColor: "#FFFFFF",
+    alignItems: "flex-end",
+  },
+  submitButton: {
+    width: 65,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: "#0064E0",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  submitButtonDisabled: {
+    backgroundColor: "#D1D5DB",
+  },
+  submitButtonText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#FFFFFF",
+  },
+  submitButtonTextDisabled: {
+    color: "#F9FAFB",
   },
 });

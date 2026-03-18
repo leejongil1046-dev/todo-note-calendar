@@ -26,7 +26,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     justifyContent: "center",
     borderBottomWidth: 1,
-    borderBottomColor: "#F3F4F6",
+    borderBottomColor: "#DDDDDD",
   },
   leftGroup: {
     flexDirection: "row",
@@ -34,18 +34,11 @@ const styles = StyleSheet.create({
   },
   backButton: {
     marginRight: 5,
-    paddingVertical: 4,
-    paddingRight: 4,
-  },
-  backIcon: {
-    fontSize: 24,
-    fontWeight: "500",
-    color: "#111827",
-    lineHeight: 24,
   },
   headerTitle: {
-    fontSize: 18,
-    fontWeight: "700",
+    fontSize: 20,
+    fontWeight: "600",
     color: "#000000",
+    paddingBottom: 2,
   },
 });

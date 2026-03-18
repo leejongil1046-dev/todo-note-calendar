@@ -57,7 +57,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   label: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: "600",
     color: "#374151",
     marginBottom: 8,
@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
     borderColor: "#E5E7EB",
     backgroundColor: "#FFFFFF",
     paddingHorizontal: 12,
-    fontSize: 14,
+    fontSize: 13,
     color: "#111827",
   },
   addButton: {
@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
   },
   addButtonText: {
     fontSize: 13,
-    fontWeight: "700",
+    fontWeight: "600",
     color: "#0064E0",
   },
   tagList: {
@@ -100,20 +100,19 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     borderRadius: 999,
-    backgroundColor: "#EEF4FF",
-    paddingLeft: 12,
-    paddingRight: 10,
-    paddingVertical: 8,
+    backgroundColor: "#F3F4F6",
+    paddingHorizontal: 12,
+    paddingVertical: 7,
   },
   tagText: {
     fontSize: 12,
-    fontWeight: "600",
-    color: "#1F2937",
+    fontWeight: "500",
+    color: "#374151",
     marginRight: 8,
   },
   tagRemove: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: "700",
-    color: "#6B7280",
+    color: "#374151",
   },
 });
