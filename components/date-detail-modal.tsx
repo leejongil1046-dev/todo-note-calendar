@@ -1,5 +1,6 @@
 import type { DateMeta } from "@/types/calendar-types";
 import { Text } from "@react-navigation/elements";
+import { Image } from "expo-image";
 import React from "react";
 import {
   Animated,
@@ -96,6 +97,15 @@ export function DateDetailModal({
             <TodoCard label="할 일" completedCount={2} totalCount={5} />
             <TodoCard label="할 일" completedCount={2} totalCount={5} />
           </Animated.View>
+          <Animated.View
+            style={[styles.floatingButton, { opacity: contentOpacity }]}
+          >
+            <Image
+              source={require("@/assets/images/plus.svg")}
+              style={styles.plusIcon}
+              contentFit="contain"
+            />
+          </Animated.View>
         </Animated.View>
       </View>
     </Modal>
@@ -136,5 +146,29 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "500",
     color: "#DC2626",
+  },
+  floatingButton: {
+    position: "absolute",
+    bottom: 20,
+    right: 20,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+
+    // 그림자 (iOS)
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+
+    // 그림자 (Android)
+    elevation: 5,
+  },
+  plusIcon: {
+    width: 50,
+    height: 50,
   },
 });
