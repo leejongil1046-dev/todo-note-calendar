@@ -22,7 +22,7 @@ export function TodoCard({ label, completedCount, totalCount }: TodoCardProps) {
             {done && (
               <Image
                 source={require("@/assets/images/check.svg")}
-                style={styles.todoCheckIcon}
+                style={{ width: 19, height: 19 }}
                 contentFit="contain"
               />
             )}
@@ -42,6 +42,7 @@ export function TodoCard({ label, completedCount, totalCount }: TodoCardProps) {
 const styles = StyleSheet.create({
   todoCard: {
     width: "100%",
+    height: 50,
     borderRadius: 12,
     paddingVertical: 15,
     paddingHorizontal: 20,
@@ -69,10 +70,6 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     alignItems: "center",
     justifyContent: "center",
-  },
-  todoCheckIcon: {
-    width: 19,
-    height: 19,
   },
   todoText: {
     fontSize: 13,

@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { TodoCard } from "./todo-card";
+import { TodoInputForm } from "./todo-input-form";
 
 type Rect = { x: number; y: number; width: number; height: number };
 
@@ -92,8 +93,8 @@ export function DateDetailModal({
                 <Text style={styles.holidayText}>{meta.holidayName}</Text>
               </View>
             )}
-
             <TodoCard label="할 일" completedCount={2} totalCount={5} />
+            <TodoInputForm />
           </Animated.View>
         </Animated.View>
       </View>
@@ -124,6 +125,7 @@ const styles = StyleSheet.create({
   },
   holidayCard: {
     width: "100%",
+    height: 50,
     borderRadius: 12,
     paddingVertical: 15,
     paddingHorizontal: 20,
