@@ -3,7 +3,6 @@ import { ConfirmModal } from "@/components/common/confirm-modal";
 import { db } from "@/lib/db/db";
 import {
   createTodoWithTasks,
-  deleteTodo,
   getTodosForDate,
   type TodoForDate,
 } from "@/lib/db/todos";
@@ -21,6 +20,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { useTodoDelete } from "@/hooks/todo/use-todo-delete";
 import { TodoCard } from "./todo/todo-card/todo-card";
 import { TodoCreateModal } from "./todo/todo-create/todo-create-modal";
 
@@ -46,12 +46,22 @@ export function DateDetailModal({
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [todos, setTodos] = useState<TodoForDate[]>([]);
 
-  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
-  const [isDeleteResultOpen, setIsDeleteResultOpen] = useState(false);
-  const [deleteResultMode, setDeleteResultMode] = useState<
-    "success" | "failed"
-  >("success");
-  const [targetTodo, setTargetTodo] = useState<TodoForDate | null>(null);
+  const dateString = meta?.dateString;
+
+  const refreshTodos = useCallback(() => {
+    if (!dateString) return;
+    setTodos(getTodosForDate(db, dateString));
+  }, [dateString]);
+
+  const {
+    isDeleteConfirmOpen,
+    isDeleteResultOpen,
+    deleteResultMode,
+    handleRequestDeleteTodo,
+    handleConfirmDelete,
+    closeDeleteConfirmModal,
+    closeDeleteResultModal,
+  } = useTodoDelete({ refreshTodos });
 
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
   const insets = useSafeAreaInsets();
@@ -61,46 +71,6 @@ export function DateDetailModal({
 
   const finalTop = topOffset + 52;
   const finalHeight = screenHeight - topOffset - bottomOffset - 52 - 82 - 30;
-
-  const dateString = meta?.dateString;
-
-  const refreshTodos = useCallback(() => {
-    if (!dateString) return;
-    setTodos(getTodosForDate(db, dateString));
-  }, [dateString]);
-
-  const handleRequestDeleteTodo = (todo: TodoForDate) => {
-    setTargetTodo(todo);
-    setIsDeleteConfirmOpen(true);
-  };
-
-  const closeDeleteConfirmModal = () => {
-    setIsDeleteConfirmOpen(false);
-  };
-
-  const closeDeleteResultModal = () => {
-    setIsDeleteResultOpen(false);
-  };
-
-  const handleConfirmDelete = () => {
-    if (!targetTodo) return;
-
-    setIsDeleteConfirmOpen(false);
-
-    requestAnimationFrame(() => {
-      const deletedCount = deleteTodo(db, targetTodo.todoId);
-
-      if (deletedCount > 0) {
-        refreshTodos();
-        setDeleteResultMode("success");
-      } else {
-        setDeleteResultMode("failed");
-      }
-
-      setIsDeleteResultOpen(true);
-      setTargetTodo(null);
-    });
-  };
 
   useEffect(() => {
     if (!visible || !dateString) return;

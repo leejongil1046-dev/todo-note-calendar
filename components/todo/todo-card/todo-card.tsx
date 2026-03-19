@@ -4,13 +4,12 @@ import {
   updateTodoTaskDone,
   type TodoForDate,
 } from "@/lib/db/todos";
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Animated, LayoutChangeEvent, StyleSheet, View } from "react-native";
+import React, { useEffect, useMemo, useState } from "react";
+import { Animated, StyleSheet, View } from "react-native";
 
+import { useTodoCardExpand } from "@/hooks/todo/use-todo-card-expand";
 import { TodoCardDetail } from "./todo-card-detail";
 import { TodoCardHeader } from "./todo-card-header";
-
-const DETAIL_MAX_HEIGHT = 250;
 
 type TodoCardProps = {
   todo: TodoForDate;
@@ -18,12 +17,10 @@ type TodoCardProps = {
 };
 
 export function TodoCard({ todo, onRequestDelete }: TodoCardProps) {
-  const [expanded, setExpanded] = useState(false);
   const [tasks, setTasks] = useState(todo.tasks);
-  const [measuredDetailHeight, setMeasuredDetailHeight] = useState(0);
 
-  const detailHeightAnim = useRef(new Animated.Value(0)).current;
-  const opacityAnim = useRef(new Animated.Value(0)).current;
+  const { expanded, toggleExpand, handleDetailLayout, detailAnimatedStyle } =
+    useTodoCardExpand();
 
   const completedCount = useMemo(() => {
     return tasks.filter((task) => task.isDone).length;
@@ -67,66 +64,6 @@ export function TodoCard({ todo, onRequestDelete }: TodoCardProps) {
     setTasks(todo.tasks);
   }, [todo.tasks]);
 
-  const animateOpen = (contentHeight: number) => {
-    const nextHeight = Math.min(contentHeight, DETAIL_MAX_HEIGHT);
-
-    Animated.parallel([
-      Animated.timing(detailHeightAnim, {
-        toValue: nextHeight,
-        duration: 220,
-        useNativeDriver: false,
-      }),
-      Animated.timing(opacityAnim, {
-        toValue: 1,
-        duration: 180,
-        useNativeDriver: false,
-      }),
-    ]).start();
-  };
-
-  const animateClose = () => {
-    Animated.parallel([
-      Animated.timing(detailHeightAnim, {
-        toValue: 0,
-        duration: 220,
-        useNativeDriver: false,
-      }),
-      Animated.timing(opacityAnim, {
-        toValue: 0,
-        duration: 140,
-        useNativeDriver: false,
-      }),
-    ]).start(() => {
-      setExpanded(false);
-    });
-  };
-
-  const toggleExpand = () => {
-    if (expanded) {
-      animateClose();
-      return;
-    }
-
-    setExpanded(true);
-
-    if (measuredDetailHeight > 0) {
-      animateOpen(measuredDetailHeight);
-    }
-  };
-
-  const handleDetailLayout = (e: LayoutChangeEvent) => {
-    const height = e.nativeEvent.layout.height;
-
-    if (height !== measuredDetailHeight) {
-      setMeasuredDetailHeight(height);
-
-      if (expanded) {
-        const nextHeight = Math.min(height, DETAIL_MAX_HEIGHT);
-        detailHeightAnim.setValue(nextHeight);
-      }
-    }
-  };
-
   return (
     <View style={[styles.wrapper, { backgroundColor: todo.categoryColor }]}>
       <TodoCardHeader
@@ -142,13 +79,7 @@ export function TodoCard({ todo, onRequestDelete }: TodoCardProps) {
       />
 
       <Animated.View
-        style={[
-          styles.animatedDetailContainer,
-          {
-            height: detailHeightAnim,
-            opacity: opacityAnim,
-          },
-        ]}
+        style={[styles.animatedDetailContainer, detailAnimatedStyle]}
       >
         <TodoCardDetail
           tasks={tasks}
