@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Modal,
   Pressable,
@@ -9,6 +9,12 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { db } from "@/lib/db/db";
+import {
+  DEFAULT_CATEGORIES,
+  getTodoCategories,
+  upsertTodoCategory,
+} from "@/lib/db/todo-categories";
 import { TodoCategory } from "@/types/todo-types";
 import { TodoCreateCategoryAddModal } from "./todo-create-category-add-modal";
 import { TodoCreateCategorySection } from "./todo-create-category-section";
@@ -34,12 +40,6 @@ type TodoCreateModalProps = {
   }) => void;
 };
 
-const DEFAULT_CATEGORIES: TodoCategory[] = [
-  { id: "exercise", name: "운동", color: "#EAF4FF" },
-  { id: "study", name: "공부", color: "#EAFBF3" },
-  { id: "schedule", name: "약속", color: "#F3EEFF" },
-];
-
 export function TodoCreateModal({
   visible,
   selectedDate,
@@ -64,11 +64,23 @@ export function TodoCreateModal({
 
   const insets = useSafeAreaInsets();
 
-  const isRepeatEnabled = useMemo(() => {
-    return startDate !== selectedDate || endDate !== selectedDate;
-  }, [startDate, endDate, selectedDate]);
+  // 지금은 “하루만” 입력하므로 반복 기능은 저장에서 항상 제거한다.
+  const isRepeatEnabled = false;
 
   const isSaveEnabled = selectedCategory !== null;
+
+  // 모달이 열릴 때마다 SQLite에서 카테고리를 다시 불러와
+  // “카테고리 추가”가 바로 반영되게 한다.
+  useEffect(() => {
+    if (!visible) return;
+    try {
+      const fromDb = getTodoCategories(db);
+      setCategories(fromDb.length > 0 ? fromDb : DEFAULT_CATEGORIES);
+    } catch {
+      // SQLite가 초기화되기 전/에러면 UI 기본 카테고리를 사용.
+      setCategories(DEFAULT_CATEGORIES);
+    }
+  }, [visible]);
 
   const addTask = () => {
     const trimmed = taskInput.trim();
@@ -107,7 +119,7 @@ export function TodoCreateModal({
       content: content.trim(),
       startDate,
       endDate,
-      repeatType: isRepeatEnabled ? repeatType : null,
+      repeatType: null,
     });
 
     resetForm();
@@ -120,7 +132,15 @@ export function TodoCreateModal({
   };
 
   const handleAddCategory = (category: TodoCategory) => {
-    setCategories((prev) => [...prev, category]);
+    // SQLite에 반영
+    upsertTodoCategory(db, category);
+
+    // 방금 추가한 카테고리를 바로 UI에 반영
+    const fromDb = getTodoCategories(db);
+    setCategories(
+      fromDb.length > 0 ? fromDb : [...DEFAULT_CATEGORIES, category],
+    );
+
     setSelectedCategory(category);
     setIsAddCategoryModalVisible(false);
     setIsCategoryDropdownOpen(false);
