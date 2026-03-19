@@ -1,7 +1,12 @@
 import React from "react";
 import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
 
-export type ConfirmMode = "delete-todo" | "delete-success" | "delete-failed";
+export type ConfirmMode =
+  | "delete-todo"
+  | "delete-success"
+  | "delete-failed"
+  | "create-success"
+  | "create-failed";
 type ConfirmButtonVariant = "primary" | "delete";
 
 type ConfirmModalProps = {
@@ -41,6 +46,22 @@ const PRESET: Record<
   "delete-failed": {
     title: "삭제 실패",
     description: "삭제할 할 일을 찾지 못했습니다.",
+    confirmLabel: "확인",
+    cancelLabel: "",
+    confirmVariant: "primary",
+    hideCancel: true,
+  },
+  "create-success": {
+    title: "추가 완료",
+    description: "할 일이 성공적으로 추가되었습니다.",
+    confirmLabel: "확인",
+    cancelLabel: "",
+    confirmVariant: "primary",
+    hideCancel: true,
+  },
+  "create-failed": {
+    title: "추가 실패",
+    description: "할 일을 추가할 수 없습니다. 다시 시도해주세요.",
     confirmLabel: "확인",
     cancelLabel: "",
     confirmVariant: "primary",

@@ -1,11 +1,7 @@
 import Plus from "@/assets/images/plus.svg";
 import { ConfirmModal } from "@/components/common/confirm-modal";
 import { db } from "@/lib/db/db";
-import {
-  createTodoWithTasks,
-  getTodosForDate,
-  type TodoForDate,
-} from "@/lib/db/todos";
+import { getTodosForDate, type TodoForDate } from "@/lib/db/todos";
 import type { DateMeta } from "@/types/calendar-types";
 import { Text } from "@react-navigation/elements";
 import React, { useCallback, useEffect, useState } from "react";
@@ -20,6 +16,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { useTodoCreate } from "@/hooks/todo/use-todo-create";
 import { useTodoDelete } from "@/hooks/todo/use-todo-delete";
 import { TodoCard } from "./todo/todo-card/todo-card";
 import { TodoCreateModal } from "./todo/todo-create/todo-create-modal";
@@ -62,6 +59,16 @@ export function DateDetailModal({
     closeDeleteConfirmModal,
     closeDeleteResultModal,
   } = useTodoDelete({ refreshTodos });
+
+  const {
+    isCreateResultOpen,
+    createResultMode,
+    closeCreateResultModal,
+    handleCreateTodo,
+  } = useTodoCreate({
+    refreshTodos,
+    closeCreateModal: () => setIsCreateModalOpen(false),
+  });
 
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
   const insets = useSafeAreaInsets();
@@ -171,10 +178,7 @@ export function DateDetailModal({
           visible={isCreateModalOpen}
           selectedDate={meta.dateString}
           onClose={() => setIsCreateModalOpen(false)}
-          onSave={(payload) => {
-            createTodoWithTasks(db, payload);
-            refreshTodos();
-          }}
+          onSave={handleCreateTodo}
         />
       </Modal>
 
@@ -192,6 +196,15 @@ export function DateDetailModal({
         }
         onConfirm={closeDeleteResultModal}
         onClose={closeDeleteResultModal}
+      />
+
+      <ConfirmModal
+        visible={isCreateResultOpen}
+        mode={
+          createResultMode === "success" ? "create-success" : "create-failed"
+        }
+        onConfirm={closeCreateResultModal}
+        onClose={closeCreateResultModal}
       />
     </>
   );

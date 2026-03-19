@@ -64,23 +64,25 @@ export function TodoCreateModal({
 
   const insets = useSafeAreaInsets();
 
-  // 지금은 “하루만” 입력하므로 반복 기능은 저장에서 항상 제거한다.
   const isRepeatEnabled = false;
-
   const isSaveEnabled = selectedCategory !== null;
 
-  // 모달이 열릴 때마다 SQLite에서 카테고리를 다시 불러와
-  // “카테고리 추가”가 바로 반영되게 한다.
   useEffect(() => {
     if (!visible) return;
+
     try {
       const fromDb = getTodoCategories(db);
       setCategories(fromDb.length > 0 ? fromDb : DEFAULT_CATEGORIES);
     } catch {
-      // SQLite가 초기화되기 전/에러면 UI 기본 카테고리를 사용.
       setCategories(DEFAULT_CATEGORIES);
     }
   }, [visible]);
+
+  useEffect(() => {
+    if (!visible) return;
+    setStartDate(selectedDate);
+    setEndDate(selectedDate);
+  }, [visible, selectedDate]);
 
   const addTask = () => {
     const trimmed = taskInput.trim();
@@ -123,7 +125,6 @@ export function TodoCreateModal({
     });
 
     resetForm();
-    onClose();
   };
 
   const handleSelectCategory = (category: TodoCategory) => {
@@ -132,10 +133,8 @@ export function TodoCreateModal({
   };
 
   const handleAddCategory = (category: TodoCategory) => {
-    // SQLite에 반영
     upsertTodoCategory(db, category);
 
-    // 방금 추가한 카테고리를 바로 UI에 반영
     const fromDb = getTodoCategories(db);
     setCategories(
       fromDb.length > 0 ? fromDb : [...DEFAULT_CATEGORIES, category],
