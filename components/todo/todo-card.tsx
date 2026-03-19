@@ -1,4 +1,5 @@
 import Check from "@/assets/images/check.svg";
+import Delete from "@/assets/images/delete.svg";
 import { db } from "@/lib/db/db";
 import {
   updateAllTodoTasksDone,
@@ -155,9 +156,15 @@ export function TodoCard({ todo }: TodoCardProps) {
             </Text>
           </View>
 
-          <Text style={styles.todoCountText}>
-            {completedCount} / {totalCount}
-          </Text>
+          {!expanded ? (
+            <Text style={styles.todoCountText}>
+              {completedCount} / {totalCount}
+            </Text>
+          ) : (
+            <Pressable style={styles.todoDeleteButton}>
+              <Delete width={18} height={18} />
+            </Pressable>
+          )}
         </View>
       </Pressable>
 
@@ -261,6 +268,23 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#6B7280",
     paddingBottom: 1,
+  },
+  todoDeleteButton: {
+    width: 30,
+    height: 30,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-end",
+  },
+  todoActionEditText: {
+    fontSize: 12,
+    fontWeight: "400",
+    color: "#888888",
+  },
+  todoActionDeleteText: {
+    fontSize: 12,
+    fontWeight: "400",
+    color: "#B85C5C",
   },
   animatedDetailContainer: {
     overflow: "hidden",
