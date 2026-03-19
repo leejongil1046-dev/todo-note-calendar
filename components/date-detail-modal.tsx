@@ -8,6 +8,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import {
   Animated,
   Modal,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -86,6 +87,14 @@ export function DateDetailModal({
 
   if (!visible || !rect || !meta) return null;
 
+  // iOS는 측정 좌표가 잘 맞는데, Android는 모달 배치 좌표계가 safe-area만큼
+  // 달라서 시작 y를 보정해줘야 합니다.
+  const initialTop = Platform.OS === "android" ? rect.y + topOffset : rect.y;
+
+  console.log("rect", rect);
+  console.log("screenWidth", screenWidth);
+  console.log("topOffset", topOffset);
+
   return (
     <>
       <Modal
@@ -108,7 +117,7 @@ export function DateDetailModal({
                 }),
                 top: progress.interpolate({
                   inputRange: [0, 1],
-                  outputRange: [rect.y, finalTop],
+                  outputRange: [initialTop, finalTop],
                 }),
                 width: progress.interpolate({
                   inputRange: [0, 1],
@@ -222,11 +231,12 @@ const styles = StyleSheet.create({
   },
   card: {
     position: "absolute",
-    padding: 30,
     backgroundColor: "#FFFFFF",
+    overflow: "hidden",
   },
   contentWrapper: {
     flex: 1,
+    padding: 30,
   },
   dateText: {
     fontSize: 16,
