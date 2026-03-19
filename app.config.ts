@@ -12,5 +12,6 @@ export default {
     android: {
       package: "com.leejongil.todonotecalendar",
     },
+    plugins: ["expo-sqlite"],
   },
 };

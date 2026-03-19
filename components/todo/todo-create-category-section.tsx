@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#FFFFFF",
     borderWidth: 1,
-    borderColor: "#D1D5DB",
+    borderColor: "#AAAAAA",
     borderStyle: "dashed",
   },
   addChipText: {
