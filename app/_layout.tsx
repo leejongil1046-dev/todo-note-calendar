@@ -1,3 +1,5 @@
+import { useColorScheme } from "@/hooks/use-color-scheme";
+import { initDb } from "@/lib/db/db";
 import {
   DarkTheme,
   DefaultTheme,
@@ -5,11 +7,10 @@ import {
 } from "@react-navigation/native";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-
-import { useColorScheme } from "@/hooks/use-color-scheme";
 
 export const unstable_settings = {
   anchor: "(tabs)",
@@ -17,6 +18,10 @@ export const unstable_settings = {
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+
+  useEffect(() => {
+    initDb();
+  }, []);
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
