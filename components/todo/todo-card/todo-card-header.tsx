@@ -14,6 +14,7 @@ type TodoCardHeaderProps = {
   expanded: boolean;
   onPressCard: () => void;
   onPressToggleAll: () => void;
+  onPressDelete: () => void;
 };
 
 export function TodoCardHeader({
@@ -25,6 +26,7 @@ export function TodoCardHeader({
   expanded,
   onPressCard,
   onPressToggleAll,
+  onPressDelete,
 }: TodoCardHeaderProps) {
   return (
     <Pressable
@@ -52,7 +54,7 @@ export function TodoCardHeader({
             {completedCount} / {totalCount}
           </Text>
         ) : (
-          <Pressable style={styles.todoDeleteButton}>
+          <Pressable style={styles.todoDeleteButton} onPress={onPressDelete}>
             <Delete width={18} height={18} />
           </Pressable>
         )}

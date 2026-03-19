@@ -14,9 +14,10 @@ const DETAIL_MAX_HEIGHT = 250;
 
 type TodoCardProps = {
   todo: TodoForDate;
+  onRequestDelete: (todo: TodoForDate) => void;
 };
 
-export function TodoCard({ todo }: TodoCardProps) {
+export function TodoCard({ todo, onRequestDelete }: TodoCardProps) {
   const [expanded, setExpanded] = useState(false);
   const [tasks, setTasks] = useState(todo.tasks);
   const [measuredDetailHeight, setMeasuredDetailHeight] = useState(0);
@@ -137,6 +138,7 @@ export function TodoCard({ todo }: TodoCardProps) {
         expanded={expanded}
         onPressCard={toggleExpand}
         onPressToggleAll={toggleAllTasks}
+        onPressDelete={() => onRequestDelete(todo)}
       />
 
       <Animated.View

@@ -1,13 +1,15 @@
 import Plus from "@/assets/images/plus.svg";
+import { ConfirmModal } from "@/components/common/confirm-modal";
 import { db } from "@/lib/db/db";
 import {
   createTodoWithTasks,
+  deleteTodo,
   getTodosForDate,
   type TodoForDate,
 } from "@/lib/db/todos";
 import type { DateMeta } from "@/types/calendar-types";
 import { Text } from "@react-navigation/elements";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Animated,
   Modal,
@@ -44,6 +46,13 @@ export function DateDetailModal({
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [todos, setTodos] = useState<TodoForDate[]>([]);
 
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [isDeleteResultOpen, setIsDeleteResultOpen] = useState(false);
+  const [deleteResultMode, setDeleteResultMode] = useState<
+    "success" | "failed"
+  >("success");
+  const [targetTodo, setTargetTodo] = useState<TodoForDate | null>(null);
+
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
   const insets = useSafeAreaInsets();
 
@@ -55,104 +64,166 @@ export function DateDetailModal({
 
   const dateString = meta?.dateString;
 
+  const refreshTodos = useCallback(() => {
+    if (!dateString) return;
+    setTodos(getTodosForDate(db, dateString));
+  }, [dateString]);
+
+  const handleRequestDeleteTodo = (todo: TodoForDate) => {
+    setTargetTodo(todo);
+    setIsDeleteConfirmOpen(true);
+  };
+
+  const closeDeleteConfirmModal = () => {
+    setIsDeleteConfirmOpen(false);
+  };
+
+  const closeDeleteResultModal = () => {
+    setIsDeleteResultOpen(false);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!targetTodo) return;
+
+    setIsDeleteConfirmOpen(false);
+
+    requestAnimationFrame(() => {
+      const deletedCount = deleteTodo(db, targetTodo.todoId);
+
+      if (deletedCount > 0) {
+        refreshTodos();
+        setDeleteResultMode("success");
+      } else {
+        setDeleteResultMode("failed");
+      }
+
+      setIsDeleteResultOpen(true);
+      setTargetTodo(null);
+    });
+  };
+
   useEffect(() => {
     if (!visible || !dateString) return;
-    setTodos(getTodosForDate(db, dateString));
-  }, [visible, dateString]);
+    refreshTodos();
+  }, [visible, dateString, refreshTodos]);
 
   if (!visible || !rect || !meta) return null;
 
   return (
-    <Modal
-      visible
-      transparent
-      animationType="none"
-      statusBarTranslucent
-      onRequestClose={onRequestClose}
-    >
-      <View style={styles.overlay} pointerEvents="box-none">
-        <Pressable style={styles.backdrop} onPress={onRequestClose} />
-
-        <Animated.View
-          style={[
-            styles.card,
-            {
-              left: progress.interpolate({
-                inputRange: [0, 1],
-                outputRange: [rect.x, screenWidth * 0.05],
-              }),
-              top: progress.interpolate({
-                inputRange: [0, 1],
-                outputRange: [rect.y, finalTop],
-              }),
-              width: progress.interpolate({
-                inputRange: [0, 1],
-                outputRange: [rect.width, screenWidth * 0.9],
-              }),
-              height: progress.interpolate({
-                inputRange: [0, 1],
-                outputRange: [rect.height, finalHeight],
-              }),
-              opacity: progress.interpolate({
-                inputRange: [0, 1],
-                outputRange: [0.8, 1],
-              }),
-              borderRadius: progress.interpolate({
-                inputRange: [0, 1],
-                outputRange: [9, 24],
-              }),
-            },
-          ]}
-        >
-          <Animated.View
-            style={[styles.contentWrapper, { opacity: contentOpacity }]}
-          >
-            <Text style={styles.dateText}>
-              {meta.year}년 {meta.month}월 {meta.day}일 ({meta.weekdayLabel})
-            </Text>
-
-            <ScrollView
-              style={styles.scrollView}
-              contentContainerStyle={styles.scrollContent}
-              showsVerticalScrollIndicator={false}
-            >
-              {meta.isHoliday && meta.holidayName && (
-                <View style={styles.holidayCard}>
-                  <Text style={styles.holidayText}>{meta.holidayName}</Text>
-                </View>
-              )}
-
-              {todos.length === 0 ? (
-                <Text style={styles.emptyTodosText}>아직 할 일이 없어요</Text>
-              ) : (
-                todos.map((todo) => <TodoCard key={todo.todoId} todo={todo} />)
-              )}
-            </ScrollView>
-          </Animated.View>
+    <>
+      <Modal
+        visible
+        transparent
+        animationType="none"
+        statusBarTranslucent
+        onRequestClose={onRequestClose}
+      >
+        <View style={styles.overlay} pointerEvents="box-none">
+          <Pressable style={styles.backdrop} onPress={onRequestClose} />
 
           <Animated.View
-            style={[styles.floatingButton, { opacity: contentOpacity }]}
+            style={[
+              styles.card,
+              {
+                left: progress.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [rect.x, screenWidth * 0.05],
+                }),
+                top: progress.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [rect.y, finalTop],
+                }),
+                width: progress.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [rect.width, screenWidth * 0.9],
+                }),
+                height: progress.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [rect.height, finalHeight],
+                }),
+                opacity: progress.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [0.8, 1],
+                }),
+                borderRadius: progress.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [9, 24],
+                }),
+              },
+            ]}
           >
-            <Pressable
-              style={styles.floatingButtonPressable}
-              onPress={() => setIsCreateModalOpen(true)}
+            <Animated.View
+              style={[styles.contentWrapper, { opacity: contentOpacity }]}
             >
-              <Plus width={50} height={50} />
-            </Pressable>
-          </Animated.View>
-        </Animated.View>
-      </View>
+              <Text style={styles.dateText}>
+                {meta.year}년 {meta.month}월 {meta.day}일 ({meta.weekdayLabel})
+              </Text>
 
-      <TodoCreateModal
-        visible={isCreateModalOpen}
-        selectedDate={meta.dateString}
-        onClose={() => setIsCreateModalOpen(false)}
-        onSave={(payload) => {
-          createTodoWithTasks(db, payload);
-          setTodos(getTodosForDate(db, meta.dateString));
-        }}
+              <ScrollView
+                style={styles.scrollView}
+                contentContainerStyle={styles.scrollContent}
+                showsVerticalScrollIndicator={false}
+              >
+                {meta.isHoliday && meta.holidayName && (
+                  <View style={styles.holidayCard}>
+                    <Text style={styles.holidayText}>{meta.holidayName}</Text>
+                  </View>
+                )}
+
+                {todos.length === 0 ? (
+                  <Text style={styles.emptyTodosText}>아직 할 일이 없어요</Text>
+                ) : (
+                  todos.map((todo) => (
+                    <TodoCard
+                      key={todo.todoId}
+                      todo={todo}
+                      onRequestDelete={handleRequestDeleteTodo}
+                    />
+                  ))
+                )}
+              </ScrollView>
+            </Animated.View>
+
+            <Animated.View
+              style={[styles.floatingButton, { opacity: contentOpacity }]}
+            >
+              <Pressable
+                style={styles.floatingButtonPressable}
+                onPress={() => setIsCreateModalOpen(true)}
+              >
+                <Plus width={50} height={50} />
+              </Pressable>
+            </Animated.View>
+          </Animated.View>
+        </View>
+
+        <TodoCreateModal
+          visible={isCreateModalOpen}
+          selectedDate={meta.dateString}
+          onClose={() => setIsCreateModalOpen(false)}
+          onSave={(payload) => {
+            createTodoWithTasks(db, payload);
+            refreshTodos();
+          }}
+        />
+      </Modal>
+
+      <ConfirmModal
+        visible={isDeleteConfirmOpen}
+        mode="delete-todo"
+        onConfirm={handleConfirmDelete}
+        onClose={closeDeleteConfirmModal}
       />
-    </Modal>
+
+      <ConfirmModal
+        visible={isDeleteResultOpen}
+        mode={
+          deleteResultMode === "success" ? "delete-success" : "delete-failed"
+        }
+        onConfirm={closeDeleteResultModal}
+        onClose={closeDeleteResultModal}
+      />
+    </>
   );
 }
 
