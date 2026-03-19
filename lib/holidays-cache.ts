@@ -6,7 +6,7 @@ export type HolidayMap = Record<string, HolidayItem>;
 
 const getCacheKey = (year: number) => `holidays:${year}`;
 
-const SEED_VERSION = "v1"; // seed 바꿀 때마다 v2, v3 처럼만 변경
+const SEED_VERSION = "v1.1"; // seed 바꿀 때마다 v2, v3 처럼만 변경
 const getSeedVersionKey = (year: number) => `holidays-seed-version:${year}`;
 
 export async function ensureHolidaySeed(years: number[]) {
