@@ -24,9 +24,9 @@ export function seedDefaultCategories(db: SQLiteDatabase) {
 }
 
 export function getTodoCategories(db: SQLiteDatabase): TodoCategory[] {
-  const rows = db.getAllSync<
-    { id: string; name: string; color: string }
-  >("SELECT id, name, color FROM todo_categories ORDER BY created_at ASC");
+  const rows = db.getAllSync<{ id: string; name: string; color: string }>(
+    "SELECT id, name, color FROM todo_categories ORDER BY created_at ASC",
+  );
 
   return rows;
 }
@@ -48,4 +48,3 @@ export function upsertTodoCategory(db: SQLiteDatabase, category: TodoCategory) {
     [category.id, category.name, category.color, now],
   );
 }
-

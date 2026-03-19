@@ -1,21 +1,20 @@
 import { AppTopBar } from "@/components/app-top-bar";
-import { getKoreaTodayParts } from "@/lib/date/get-korea-today-parts";
 import React from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-type Todo = {
-  id: string;
-  text: string;
-  done: boolean;
-};
+// type Todo = {
+//   id: string;
+//   text: string;
+//   done: boolean;
+// };
 
-type TodosByDate = {
-  [date: string]: Todo[];
-};
+// type TodosByDate = {
+//   [date: string]: Todo[];
+// };
 
 export default function UserScreen() {
-  const koreaToday = getKoreaTodayParts();
+  // const koreaToday = getKoreaTodayParts();
 
   // const [todosByDate, setTodosByDate] = useState<TodosByDate>({});
   // const [input, setInput] = useState("");

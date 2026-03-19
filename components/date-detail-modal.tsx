@@ -19,8 +19,8 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { TodoCard } from "./todo/todo-card";
-import { TodoCreateModal } from "./todo/todo-create-modal";
+import { TodoCard } from "./todo/todo-card/todo-card";
+import { TodoCreateModal } from "./todo/todo-create/todo-create-modal";
 
 type Rect = { x: number; y: number; width: number; height: number };
 

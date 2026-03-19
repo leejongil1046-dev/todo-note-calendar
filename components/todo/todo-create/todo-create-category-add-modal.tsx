@@ -1,17 +1,17 @@
 import React, { useMemo, useState } from "react";
 import {
-    Modal,
-    Pressable,
-    StyleSheet,
-    Text,
-    TextInput,
-    View,
+	Modal,
+	Pressable,
+	StyleSheet,
+	Text,
+	TextInput,
+	View,
 } from "react-native";
 
 import {
-    COLOR_OPTIONS,
-    type CardColor,
-    type TodoCategory,
+	COLOR_OPTIONS,
+	type CardColor,
+	type TodoCategory,
 } from "@/types/todo-types";
 
 type TodoCreateCategoryAddModalProps = {

@@ -17,7 +17,7 @@ export type TodoTaskItem = {
   id: number;
   title: string;
   isDone: boolean;
-  sortOrder: number | null;
+  sortOrder: number;
 };
 
 export type TodoForDate = {
@@ -112,6 +112,7 @@ export function getTodosForDate(
     taskIsDone: number | null;
     taskSortOrder: number | null;
     updatedAt: number;
+    createdAt: number;
   }>(
     `
         SELECT
@@ -123,12 +124,14 @@ export function getTodosForDate(
           tt.title AS taskTitle,
           tt.is_done AS taskIsDone,
           tt.sort_order AS taskSortOrder,
+          t.created_at AS createdAt,
           t.updated_at AS updatedAt
         FROM todos t
         JOIN todo_categories c ON c.id = t.category_id
         LEFT JOIN todo_tasks tt ON tt.todo_id = t.id
         WHERE t.start_date <= ?
           AND t.end_date >= ?
+        ORDER BY t.created_at ASC, tt.sort_order ASC
       `,
     [dateString, dateString],
   );
@@ -148,7 +151,11 @@ export function getTodosForDate(
 
     const todo = todoMap.get(row.todoId)!;
 
-    if (row.taskId !== null && row.taskTitle !== null) {
+    if (
+      row.taskId !== null &&
+      row.taskTitle !== null &&
+      row.taskSortOrder !== null
+    ) {
       todo.tasks.push({
         id: row.taskId,
         title: row.taskTitle,
@@ -212,4 +219,16 @@ export function updateAllTodoTasksDone(
     `,
     [now, todoId],
   );
+}
+
+export function deleteTodo(db: SQLiteDatabase, todoId: number) {
+  const result = db.runSync(
+    `
+        DELETE FROM todos
+        WHERE id = ?
+      `,
+    [todoId],
+  );
+
+  return result.changes;
 }

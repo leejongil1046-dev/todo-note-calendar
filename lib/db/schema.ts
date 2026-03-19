@@ -30,7 +30,7 @@ export function runMigrations(db: SQLiteDatabase) {
       todo_id INTEGER NOT NULL,
       title TEXT NOT NULL,
       is_done INTEGER NOT NULL DEFAULT 0,
-      sort_order INTEGER,
+      sort_order INTEGER NOT NULL,
       created_at INTEGER NOT NULL,
       updated_at INTEGER NOT NULL,
       FOREIGN KEY (todo_id) REFERENCES todos(id) ON DELETE CASCADE
