@@ -251,6 +251,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 16,
     paddingTop: 2,
+    backgroundColor: "rgba(255,255,255,0.5)",
   },
   contentText: {
     fontSize: 12,
@@ -263,6 +264,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     minHeight: 34,
     marginBottom: 6,
+    // backgroundColor: "tomato",
+    marginLeft: 28,
   },
   taskText: {
     flex: 1,
