@@ -129,7 +129,6 @@ export function getTodosForDate(
         LEFT JOIN todo_tasks tt ON tt.todo_id = t.id
         WHERE t.start_date <= ?
           AND t.end_date >= ?
-        ORDER BY t.updated_at DESC, tt.sort_order ASC, tt.id ASC
       `,
     [dateString, dateString],
   );
@@ -160,4 +159,57 @@ export function getTodosForDate(
   }
 
   return Array.from(todoMap.values());
+}
+
+export function updateTodoTaskDone(
+  db: SQLiteDatabase,
+  todoId: number,
+  taskId: number,
+  isDone: boolean,
+) {
+  const now = Date.now();
+
+  db.runSync(
+    `
+        UPDATE todo_tasks
+        SET is_done = ?, updated_at = ?
+        WHERE id = ?
+      `,
+    [isDone ? 1 : 0, now, taskId],
+  );
+
+  db.runSync(
+    `
+        UPDATE todos
+        SET updated_at = ?
+        WHERE id = ?
+      `,
+    [now, todoId],
+  );
+}
+
+export function updateAllTodoTasksDone(
+  db: SQLiteDatabase,
+  todoId: number,
+  isDone: boolean,
+) {
+  const now = Date.now();
+
+  db.runSync(
+    `
+      UPDATE todo_tasks
+      SET is_done = ?, updated_at = ?
+      WHERE todo_id = ?
+    `,
+    [isDone ? 1 : 0, now, todoId],
+  );
+
+  db.runSync(
+    `
+      UPDATE todos
+      SET updated_at = ?
+      WHERE id = ?
+    `,
+    [now, todoId],
+  );
 }

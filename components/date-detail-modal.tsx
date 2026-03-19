@@ -12,6 +12,7 @@ import {
   Animated,
   Modal,
   Pressable,
+  ScrollView,
   StyleSheet,
   useWindowDimensions,
   View,
@@ -103,22 +104,30 @@ export function DateDetailModal({
             },
           ]}
         >
-          <Animated.View style={{ opacity: contentOpacity }}>
+          <Animated.View
+            style={[styles.contentWrapper, { opacity: contentOpacity }]}
+          >
             <Text style={styles.dateText}>
               {meta.year}년 {meta.month}월 {meta.day}일 ({meta.weekdayLabel})
             </Text>
 
-            {meta.isHoliday && meta.holidayName && (
-              <View style={styles.holidayCard}>
-                <Text style={styles.holidayText}>{meta.holidayName}</Text>
-              </View>
-            )}
+            <ScrollView
+              style={styles.scrollView}
+              contentContainerStyle={styles.scrollContent}
+              showsVerticalScrollIndicator={false}
+            >
+              {meta.isHoliday && meta.holidayName && (
+                <View style={styles.holidayCard}>
+                  <Text style={styles.holidayText}>{meta.holidayName}</Text>
+                </View>
+              )}
 
-            {todos.length === 0 ? (
-              <Text style={styles.emptyTodosText}>아직 할 일이 없어요</Text>
-            ) : (
-              todos.map((todo) => <TodoCard key={todo.todoId} todo={todo} />)
-            )}
+              {todos.length === 0 ? (
+                <Text style={styles.emptyTodosText}>아직 할 일이 없어요</Text>
+              ) : (
+                todos.map((todo) => <TodoCard key={todo.todoId} todo={todo} />)
+              )}
+            </ScrollView>
           </Animated.View>
 
           <Animated.View
@@ -162,11 +171,20 @@ const styles = StyleSheet.create({
     padding: 30,
     backgroundColor: "#FFFFFF",
   },
+  contentWrapper: {
+    flex: 1,
+  },
   dateText: {
     fontSize: 16,
     fontWeight: "700",
     marginBottom: 16,
     marginLeft: 3,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 90,
   },
   holidayCard: {
     width: "100%",

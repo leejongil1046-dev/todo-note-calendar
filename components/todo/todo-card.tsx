@@ -1,6 +1,11 @@
 import Check from "@/assets/images/check.svg";
-import type { TodoForDate } from "@/lib/db/todos";
-import React, { useMemo, useRef, useState } from "react";
+import { db } from "@/lib/db/db";
+import {
+  updateAllTodoTasksDone,
+  updateTodoTaskDone,
+  type TodoForDate,
+} from "@/lib/db/todos";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Animated,
   LayoutChangeEvent,
@@ -12,7 +17,7 @@ import {
 } from "react-native";
 
 const HEADER_HEIGHT = 50;
-const DETAIL_MAX_HEIGHT = 150;
+const DETAIL_MAX_HEIGHT = 250;
 
 type TodoCardProps = {
   todo: TodoForDate;
@@ -45,15 +50,28 @@ export function TodoCard({ todo }: TodoCardProps) {
         isDone: nextDone,
       })),
     );
+
+    updateAllTodoTasksDone(db, todo.todoId, nextDone);
   };
 
   const toggleTask = (taskId: number) => {
+    const targetTask = tasks.find((task) => task.id === taskId);
+    if (!targetTask) return;
+
+    const nextDone = !targetTask.isDone;
+
     setTasks((prev) =>
       prev.map((task) =>
-        task.id === taskId ? { ...task, isDone: !task.isDone } : task,
+        task.id === taskId ? { ...task, isDone: nextDone } : task,
       ),
     );
+
+    updateTodoTaskDone(db, todo.todoId, taskId, nextDone);
   };
+
+  useEffect(() => {
+    setTasks(todo.tasks);
+  }, [todo.tasks]);
 
   const animateOpen = (contentHeight: number) => {
     const nextHeight = Math.min(contentHeight, DETAIL_MAX_HEIGHT);
@@ -158,10 +176,6 @@ export function TodoCard({ todo }: TodoCardProps) {
           contentContainerStyle={styles.detailContentContainer}
         >
           <View onLayout={handleDetailLayout}>
-            {!!todo.content && (
-              <Text style={styles.contentText}>{todo.content}</Text>
-            )}
-
             {tasks.map((task) => (
               <View key={task.id} style={styles.taskRow}>
                 <Pressable
@@ -180,6 +194,10 @@ export function TodoCard({ todo }: TodoCardProps) {
                 </Text>
               </View>
             ))}
+
+            {!!todo.content && (
+              <Text style={styles.contentText}>{todo.content}</Text>
+            )}
           </View>
         </ScrollView>
       </Animated.View>
@@ -258,13 +276,19 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     color: "#374151",
     marginBottom: 10,
+    borderWidth: 1,
+    borderColor: "#000000",
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12,
+    marginLeft: 28,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
   },
   taskRow: {
     flexDirection: "row",
     alignItems: "center",
     minHeight: 34,
     marginBottom: 6,
-    // backgroundColor: "tomato",
     marginLeft: 28,
   },
   taskText: {
