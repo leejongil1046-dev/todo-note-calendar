@@ -1,7 +1,13 @@
 import Plus from "@/assets/images/plus.svg";
+import { db } from "@/lib/db/db";
+import {
+  createTodoWithTasks,
+  getTodosForDate,
+  type TodoForDate,
+} from "@/lib/db/todos";
 import type { DateMeta } from "@/types/calendar-types";
 import { Text } from "@react-navigation/elements";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Animated,
   Modal,
@@ -11,6 +17,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+
 import { TodoCard } from "./todo/todo-card";
 import { TodoCreateModal } from "./todo/todo-create-modal";
 
@@ -34,14 +41,23 @@ export function DateDetailModal({
   onRequestClose,
 }: DateDetailModalProps) {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [todos, setTodos] = useState<TodoForDate[]>([]);
+
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
   const insets = useSafeAreaInsets();
 
-  const TOP_OFFSET = insets.top;
-  const BOTTOM_OFFSET = insets.bottom;
+  const topOffset = insets.top;
+  const bottomOffset = insets.bottom;
 
-  const finalTop = insets.top + 52;
-  const finalHeight = screenHeight - TOP_OFFSET - BOTTOM_OFFSET - 52 - 82 - 30;
+  const finalTop = topOffset + 52;
+  const finalHeight = screenHeight - topOffset - bottomOffset - 52 - 82 - 30;
+
+  const dateString = meta?.dateString;
+
+  useEffect(() => {
+    if (!visible || !dateString) return;
+    setTodos(getTodosForDate(db, dateString));
+  }, [visible, dateString]);
 
   if (!visible || !rect || !meta) return null;
 
@@ -55,6 +71,7 @@ export function DateDetailModal({
     >
       <View style={styles.overlay} pointerEvents="box-none">
         <Pressable style={styles.backdrop} onPress={onRequestClose} />
+
         <Animated.View
           style={[
             styles.card,
@@ -90,15 +107,20 @@ export function DateDetailModal({
             <Text style={styles.dateText}>
               {meta.year}년 {meta.month}월 {meta.day}일 ({meta.weekdayLabel})
             </Text>
+
             {meta.isHoliday && meta.holidayName && (
               <View style={styles.holidayCard}>
                 <Text style={styles.holidayText}>{meta.holidayName}</Text>
               </View>
             )}
-            <TodoCard label="할 일" completedCount={2} totalCount={5} />
-            <TodoCard label="할 일" completedCount={2} totalCount={5} />
-            <TodoCard label="할 일" completedCount={2} totalCount={5} />
+
+            {todos.length === 0 ? (
+              <Text style={styles.emptyTodosText}>아직 할 일이 없어요</Text>
+            ) : (
+              todos.map((todo) => <TodoCard key={todo.todoId} todo={todo} />)
+            )}
           </Animated.View>
+
           <Animated.View
             style={[styles.floatingButton, { opacity: contentOpacity }]}
           >
@@ -117,8 +139,8 @@ export function DateDetailModal({
         selectedDate={meta.dateString}
         onClose={() => setIsCreateModalOpen(false)}
         onSave={(payload) => {
-          console.log(payload);
-          // 여기서 상태 업데이트 또는 저장 처리
+          createTodoWithTasks(db, payload);
+          setTodos(getTodosForDate(db, meta.dateString));
         }}
       />
     </Modal>
@@ -160,6 +182,12 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     color: "#DC2626",
   },
+  emptyTodosText: {
+    marginTop: 14,
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#6B7280",
+  },
   floatingButton: {
     position: "absolute",
     bottom: 20,
@@ -170,14 +198,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#FFFFFF",
-
-    // 그림자 (iOS)
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.2,
     shadowRadius: 10,
-
-    // 그림자 (Android)
     elevation: 5,
   },
   floatingButtonPressable: {
@@ -186,9 +210,5 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     justifyContent: "center",
     alignItems: "center",
-  },
-  plusIcon: {
-    width: 50,
-    height: 50,
   },
 });

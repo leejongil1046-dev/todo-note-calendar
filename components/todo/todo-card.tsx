@@ -1,65 +1,189 @@
 import Check from "@/assets/images/check.svg";
-import React, { useRef, useState } from "react";
-import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
+import type { TodoForDate } from "@/lib/db/todos";
+import React, { useMemo, useRef, useState } from "react";
+import {
+  Animated,
+  LayoutChangeEvent,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 
-const COLLAPSED_HEIGHT = 50;
-const EXPANDED_HEIGHT = 250;
+const HEADER_HEIGHT = 50;
+const DETAIL_MAX_HEIGHT = 150;
 
 type TodoCardProps = {
-  label: string;
-  completedCount: number;
-  totalCount: number;
+  todo: TodoForDate;
 };
 
-export function TodoCard({ label, completedCount, totalCount }: TodoCardProps) {
-  const [done, setDone] = useState(false);
+export function TodoCard({ todo }: TodoCardProps) {
   const [expanded, setExpanded] = useState(false);
+  const [tasks, setTasks] = useState(todo.tasks);
+  const [measuredDetailHeight, setMeasuredDetailHeight] = useState(0);
 
-  const heightAnim = useRef(new Animated.Value(COLLAPSED_HEIGHT)).current;
+  const detailHeightAnim = useRef(new Animated.Value(0)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
 
-  const toggleExpand = () => {
-    const nextExpanded = !expanded;
+  const completedCount = useMemo(() => {
+    return tasks.filter((task) => task.isDone).length;
+  }, [tasks]);
+
+  const totalCount = tasks.length;
+
+  const isAllDone = useMemo(() => {
+    return totalCount > 0 && completedCount === totalCount;
+  }, [completedCount, totalCount]);
+
+  const toggleAllTasks = () => {
+    const nextDone = !isAllDone;
+
+    setTasks((prev) =>
+      prev.map((task) => ({
+        ...task,
+        isDone: nextDone,
+      })),
+    );
+  };
+
+  const toggleTask = (taskId: number) => {
+    setTasks((prev) =>
+      prev.map((task) =>
+        task.id === taskId ? { ...task, isDone: !task.isDone } : task,
+      ),
+    );
+  };
+
+  const animateOpen = (contentHeight: number) => {
+    const nextHeight = Math.min(contentHeight, DETAIL_MAX_HEIGHT);
 
     Animated.parallel([
-      Animated.timing(heightAnim, {
-        toValue: nextExpanded ? EXPANDED_HEIGHT : COLLAPSED_HEIGHT,
+      Animated.timing(detailHeightAnim, {
+        toValue: nextHeight,
         duration: 220,
         useNativeDriver: false,
       }),
       Animated.timing(opacityAnim, {
-        toValue: nextExpanded ? 1 : 0,
-        duration: 150,
+        toValue: 1,
+        duration: 180,
         useNativeDriver: false,
       }),
     ]).start();
+  };
 
-    setExpanded(nextExpanded);
+  const animateClose = () => {
+    Animated.parallel([
+      Animated.timing(detailHeightAnim, {
+        toValue: 0,
+        duration: 220,
+        useNativeDriver: false,
+      }),
+      Animated.timing(opacityAnim, {
+        toValue: 0,
+        duration: 140,
+        useNativeDriver: false,
+      }),
+    ]).start(() => {
+      setExpanded(false);
+    });
+  };
+
+  const toggleExpand = () => {
+    if (expanded) {
+      animateClose();
+      return;
+    }
+
+    setExpanded(true);
+
+    if (measuredDetailHeight > 0) {
+      animateOpen(measuredDetailHeight);
+    }
+  };
+
+  const handleDetailLayout = (e: LayoutChangeEvent) => {
+    const height = e.nativeEvent.layout.height;
+
+    if (height !== measuredDetailHeight) {
+      setMeasuredDetailHeight(height);
+
+      if (expanded) {
+        const nextHeight = Math.min(height, DETAIL_MAX_HEIGHT);
+        detailHeightAnim.setValue(nextHeight);
+      }
+    }
   };
 
   return (
-    <Animated.View style={[styles.wrapper, { height: heightAnim }]}>
-      <Pressable style={styles.todoCard} onPress={toggleExpand}>
+    <View style={[styles.wrapper, { backgroundColor: todo.categoryColor }]}>
+      <Pressable
+        style={[styles.todoCard, { backgroundColor: todo.categoryColor }]}
+        onPress={toggleExpand}
+      >
         <View style={styles.todoHeaderRow}>
           <View style={styles.todoLeft}>
             <Pressable
               style={styles.todoCheckboxWrapper}
-              onPress={() => setDone((prev) => !prev)}
+              onPress={toggleAllTasks}
             >
               <View style={styles.todoCheckbox}>
-                {done && <Check width={19} height={19} />}
+                {isAllDone && <Check width={19} height={19} />}
               </View>
             </Pressable>
-            <Text style={[styles.todoText, done && styles.todoTextDone]}>
-              {label}
+
+            <Text style={[styles.todoText, isAllDone && styles.todoTextDone]}>
+              {todo.categoryName}
             </Text>
           </View>
+
           <Text style={styles.todoCountText}>
             {completedCount} / {totalCount}
           </Text>
         </View>
       </Pressable>
-    </Animated.View>
+
+      <Animated.View
+        style={[
+          styles.animatedDetailContainer,
+          {
+            height: detailHeightAnim,
+            opacity: opacityAnim,
+          },
+        ]}
+      >
+        <ScrollView
+          nestedScrollEnabled
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.detailContentContainer}
+        >
+          <View onLayout={handleDetailLayout}>
+            {!!todo.content && (
+              <Text style={styles.contentText}>{todo.content}</Text>
+            )}
+
+            {tasks.map((task) => (
+              <View key={task.id} style={styles.taskRow}>
+                <Pressable
+                  style={styles.todoCheckboxWrapper}
+                  onPress={() => toggleTask(task.id)}
+                >
+                  <View style={styles.todoCheckbox}>
+                    {task.isDone && <Check width={19} height={19} />}
+                  </View>
+                </Pressable>
+
+                <Text
+                  style={[styles.taskText, task.isDone && styles.todoTextDone]}
+                >
+                  {task.title}
+                </Text>
+              </View>
+            ))}
+          </View>
+        </ScrollView>
+      </Animated.View>
+    </View>
   );
 }
 
@@ -67,17 +191,14 @@ const styles = StyleSheet.create({
   wrapper: {
     width: "100%",
     borderRadius: 12,
-    backgroundColor: "#F3F8FF",
     marginVertical: 6,
     overflow: "hidden",
   },
   todoCard: {
     width: "100%",
-    height: 50,
-    borderRadius: 12,
+    height: HEADER_HEIGHT,
     paddingVertical: 15,
     paddingHorizontal: 20,
-    backgroundColor: "#F3F8FF",
     justifyContent: "center",
   },
   todoHeaderRow: {
@@ -112,6 +233,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "500",
     paddingBottom: 2,
+    color: "#111827",
   },
   todoTextDone: {
     textDecorationLine: "line-through",
@@ -120,6 +242,32 @@ const styles = StyleSheet.create({
   todoCountText: {
     fontSize: 12,
     color: "#6B7280",
+    paddingBottom: 1,
+  },
+  animatedDetailContainer: {
+    overflow: "hidden",
+  },
+  detailContentContainer: {
+    paddingHorizontal: 20,
+    paddingBottom: 16,
+    paddingTop: 2,
+  },
+  contentText: {
+    fontSize: 12,
+    lineHeight: 18,
+    color: "#374151",
+    marginBottom: 10,
+  },
+  taskRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    minHeight: 34,
+    marginBottom: 6,
+  },
+  taskText: {
+    flex: 1,
+    fontSize: 13,
+    color: "#111827",
     paddingBottom: 1,
   },
 });

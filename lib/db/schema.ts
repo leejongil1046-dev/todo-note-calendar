@@ -37,3 +37,17 @@ export function runMigrations(db: SQLiteDatabase) {
     );
   `);
 }
+
+export function resetDatabase(db: SQLiteDatabase) {
+  db.execSync(`
+    PRAGMA foreign_keys = OFF;
+
+    DROP TABLE IF EXISTS todo_tasks;
+    DROP TABLE IF EXISTS todos;
+    DROP TABLE IF EXISTS todo_categories;
+
+    PRAGMA foreign_keys = ON;
+  `);
+
+  runMigrations(db);
+}
