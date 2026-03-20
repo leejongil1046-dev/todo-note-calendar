@@ -1,4 +1,8 @@
-import type { CalendarCellData, DateMeta } from "../../types/calendar-types";
+import type {
+  CalendarCellData,
+  DateMeta,
+  TodoCountByDate,
+} from "../../types/calendar-types";
 import type { HolidayMap } from "../holidays-cache";
 
 export const getDaysInMonth = (year: number, month: number) => {
@@ -200,34 +204,50 @@ export const chunkMonthCells = (cells: CalendarCellData[]) => {
   return weeks;
 };
 
-export const buildDateMeta = (
-  dateString: string,
+export const getDayTone = (
+  weekdayIndex: number,
+  isHoliday: boolean,
+): "red" | "blue" | "default" => {
+  if (isHoliday || weekdayIndex === 0) return "red";
+  if (!isHoliday && weekdayIndex === 6) return "blue";
+  return "default";
+};
+
+export const buildDateMetaMap = (
+  cells: CalendarCellData[],
   holidayMap?: HolidayMap | null,
-): DateMeta => {
-  const [yearStr, monthStr, dayStr] = dateString.split("-");
-  const year = Number(yearStr);
-  const month = Number(monthStr);
-  const day = Number(dayStr);
+  todoCountByDate: TodoCountByDate = {},
+) => {
+  const metaMap: Record<string, DateMeta> = {};
 
-  const d = new Date(`${dateString}T00:00:00`);
-  const weekdayIndex = d.getDay(); // 0=일, 1=월...
-  const weekdayLabel = ["일", "월", "화", "수", "목", "금", "토"][weekdayIndex];
+  cells.forEach((cell) => {
+    const d = new Date(`${cell.dateString}T00:00:00`);
+    const weekdayIndex = d.getDay();
+    const weekdayLabel = ["일", "월", "화", "수", "목", "금", "토"][
+      weekdayIndex
+    ];
 
-  const todayStr = getTodayDateString();
-  const isToday = dateString === todayStr;
+    const holiday = holidayMap?.[cell.dateString];
+    const isHoliday = !!holiday?.isHoliday;
+    const holidayName = holiday?.name;
 
-  const holiday = holidayMap?.[dateString];
-  const isHoliday = !!holiday?.isHoliday;
-  const holidayName = holiday?.name;
+    const todoCount = todoCountByDate[cell.dateString] ?? 0;
 
-  return {
-    dateString,
-    year,
-    month,
-    day,
-    weekdayLabel,
-    isToday,
-    isHoliday,
-    holidayName,
-  };
+    metaMap[cell.dateString] = {
+      dateString: cell.dateString,
+      year: cell.year,
+      month: cell.month,
+      day: cell.day,
+      weekdayIndex,
+      weekdayLabel,
+      isToday: cell.isToday,
+      isHoliday,
+      holidayName,
+      dayTone: getDayTone(weekdayIndex, isHoliday),
+      hasTodo: todoCount > 0,
+      todoCount,
+    };
+  });
+
+  return metaMap;
 };

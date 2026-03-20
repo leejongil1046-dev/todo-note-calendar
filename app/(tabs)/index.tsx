@@ -2,16 +2,13 @@ import { AppTopBar } from "@/components/app-top-bar";
 import { Calendar } from "@/components/calendar/calendar";
 import { DateDetailModal } from "@/components/date-detail-modal";
 import { useDateDetailModal } from "@/hooks/date/use-date-detail-modal";
-import { buildDateMeta } from "@/lib/calendar/date-utils";
+import { buildDateMetaMap, buildMonthCells } from "@/lib/calendar/date-utils";
 import { getKoreaTodayParts } from "@/lib/date/get-korea-today-parts";
-import {
-  buildHolidaySeedByYears,
-  ensureHolidaySeed,
-  getHolidayMapForYears,
-  HolidayMap,
-} from "@/lib/holidays-cache";
+import { buildHolidayMapFromSeedYears } from "@/lib/holiday";
+import { buildHolidaySeedByYears, HolidayMap } from "@/lib/holidays-cache";
+import type { TodoCountByDate } from "@/types/calendar-types";
 import Constants from "expo-constants";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -19,11 +16,15 @@ const SERVICE_KEY =
   (Constants.expoConfig?.extra?.holidayApiKey as string) ?? "";
 
 const SHOULD_REFRESH_HOLIDAYS = false;
+const HOLIDAY_YEARS = [2024, 2025, 2026, 2027] as const;
 
 export default function CalendarScreen() {
   const koreaToday = getKoreaTodayParts();
   const [selectedDate, setSelectedDate] = useState(koreaToday.dateString);
-  const [holidayMap, setHolidayMap] = useState<HolidayMap | null>(null);
+
+  const holidayMap = useMemo<HolidayMap>(() => {
+    return buildHolidayMapFromSeedYears([...HOLIDAY_YEARS]);
+  }, []);
 
   const {
     isDateCardOpen,
@@ -37,23 +38,29 @@ export default function CalendarScreen() {
 
   useEffect(() => {
     const load = async () => {
-      const years = [2024, 2025, 2026, 2027];
-
-      await ensureHolidaySeed(years);
-
-      const cachedMap = await getHolidayMapForYears(years);
-      setHolidayMap(cachedMap);
-
       if (!SHOULD_REFRESH_HOLIDAYS) return;
 
-      const currentYear = new Date().getFullYear();
-      const nextYear = currentYear + 1;
-
-      await buildHolidaySeedByYears([currentYear, nextYear], SERVICE_KEY);
+      const seed = await buildHolidaySeedByYears([2026, 2027], SERVICE_KEY);
+      console.log(JSON.stringify(seed, null, 2));
     };
 
     load();
   }, []);
+
+  // TODO: 나중에는 DB에서 날짜별 할 일 개수 조회 결과로 교체
+  const todoCountByDate: TodoCountByDate = useMemo(() => {
+    return {};
+  }, []);
+
+  const monthCells = useMemo(() => {
+    return buildMonthCells(koreaToday.year, koreaToday.month, selectedDate);
+  }, [koreaToday.year, koreaToday.month, selectedDate]);
+
+  const dateMetaMap = useMemo(() => {
+    return buildDateMetaMap(monthCells, holidayMap, todoCountByDate);
+  }, [monthCells, holidayMap, todoCountByDate]);
+
+  const selectedDateMeta = dateMetaMap[selectedDate] ?? null;
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
@@ -80,7 +87,7 @@ export default function CalendarScreen() {
             initialYear={koreaToday.year}
             initialMonth={koreaToday.month}
             selectedDate={selectedDate}
-            holidayMap={holidayMap ?? undefined}
+            holidayMap={holidayMap}
             onPressDate={(dateString, layout) => {
               if (dateString === selectedDate && layout) {
                 openDetailCard(layout);
@@ -95,7 +102,7 @@ export default function CalendarScreen() {
 
       <DateDetailModal
         visible={isDateCardOpen}
-        meta={buildDateMeta(selectedDate, holidayMap)}
+        meta={selectedDateMeta}
         rect={detailRect}
         progress={detailProgress}
         contentOpacity={contentOpacity}
