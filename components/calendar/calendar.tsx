@@ -3,7 +3,7 @@ import { StyleSheet, View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 
 import { HolidayMap } from "@/lib/holidays-cache";
-import type { CalendarCellData } from "@/types/calendar-types";
+import type { CalendarCellData, DateMeta } from "@/types/calendar-types";
 import { CalendarGrid } from "./calendar-grid";
 import { CalendarMonthHeader } from "./calendar-month-header";
 import { CalendarWeekdayHeader } from "./calendar-weekday-header";
@@ -12,19 +12,21 @@ type CalendarProps = {
   initialYear: number;
   initialMonth: number;
   selectedDate?: string;
+  holidayMap?: HolidayMap;
+  dateMetaMap?: Record<string, DateMeta>;
   onPressDate?: (
     dateString: string,
     layoutInWindow?: { x: number; y: number; width: number; height: number },
   ) => void;
-  holidayMap?: HolidayMap;
 };
 
 export const Calendar = ({
   initialYear,
   initialMonth,
   selectedDate,
-  onPressDate,
   holidayMap,
+  dateMetaMap,
+  onPressDate,
 }: CalendarProps) => {
   const [currentYear, setCurrentYear] = useState(initialYear);
   const [currentMonth, setCurrentMonth] = useState(initialMonth);
@@ -105,8 +107,9 @@ export const Calendar = ({
             year={currentYear}
             month={currentMonth}
             selectedDate={visibleSelectedDate}
-            onPressDate={handlePressDate}
             holidayMap={holidayMap}
+            dateMetaMap={dateMetaMap}
+            onPressDate={handlePressDate}
           />
         </View>
       </GestureDetector>

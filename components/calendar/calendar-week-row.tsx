@@ -1,22 +1,24 @@
 import { StyleSheet, View } from "react-native";
 
 import { HolidayMap } from "@/lib/holidays-cache";
-import type { CalendarCellData } from "@/types/calendar-types";
+import type { CalendarCellData, DateMeta } from "@/types/calendar-types";
 import { CalendarCell } from "./calendar-cell";
 
 type CalendarWeekRowProps = {
   week: CalendarCellData[];
+  holidayMap?: HolidayMap;
+  dateMetaMap?: Record<string, DateMeta>;
   onPressDate?: (
     cell: CalendarCellData,
     layoutInWindow?: { x: number; y: number; width: number; height: number },
   ) => void;
-  holidayMap?: HolidayMap;
 };
 
 export const CalendarWeekRow = ({
   week,
-  onPressDate,
   holidayMap,
+  dateMetaMap,
+  onPressDate,
 }: CalendarWeekRowProps) => {
   return (
     <View style={styles.row}>
@@ -25,8 +27,9 @@ export const CalendarWeekRow = ({
           key={cell.key}
           cell={cell}
           weekdayIndex={index}
-          onPress={onPressDate}
           holiday={holidayMap?.[cell.dateString]}
+          dateMeta={dateMetaMap?.[cell.dateString]}
+          onPress={onPressDate}
         />
       ))}
     </View>

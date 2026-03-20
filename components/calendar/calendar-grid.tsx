@@ -2,26 +2,28 @@ import { StyleSheet, View } from "react-native";
 
 import { buildMonthCells, chunkMonthCells } from "@/lib/calendar/date-utils";
 import { HolidayMap } from "@/lib/holidays-cache";
-import type { CalendarCellData } from "@/types/calendar-types";
+import type { CalendarCellData, DateMeta } from "@/types/calendar-types";
 import { CalendarWeekRow } from "./calendar-week-row";
 
 type CalendarGridProps = {
   year: number;
   month: number;
   selectedDate?: string;
+  holidayMap?: HolidayMap;
+  dateMetaMap?: Record<string, DateMeta>;
   onPressDate?: (
     cell: CalendarCellData,
     layoutInWindow?: { x: number; y: number; width: number; height: number },
   ) => void;
-  holidayMap?: HolidayMap;
 };
 
 export const CalendarGrid = ({
   year,
   month,
   selectedDate,
-  onPressDate,
   holidayMap,
+  dateMetaMap,
+  onPressDate,
 }: CalendarGridProps) => {
   const monthCells = buildMonthCells(year, month, selectedDate);
   const weeks = chunkMonthCells(monthCells);
@@ -32,8 +34,9 @@ export const CalendarGrid = ({
         <CalendarWeekRow
           key={`${year}-${month}-week-${index}`}
           week={week}
-          onPressDate={onPressDate}
           holidayMap={holidayMap}
+          dateMetaMap={dateMetaMap}
+          onPressDate={onPressDate}
         />
       ))}
     </View>

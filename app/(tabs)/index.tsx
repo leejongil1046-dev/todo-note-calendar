@@ -71,7 +71,11 @@ export default function CalendarScreen() {
     return buildDateMetaMap(monthCells, holidayMap, todoCountByDate);
   }, [monthCells, holidayMap, todoCountByDate]);
 
+  // console.log(JSON.stringify(dateMetaMap, null, 2));
+
   const selectedDateMeta = dateMetaMap[selectedDate] ?? null;
+
+  // console.log(selectedDate);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
@@ -99,8 +103,7 @@ export default function CalendarScreen() {
             initialMonth={koreaToday.month}
             selectedDate={selectedDate}
             holidayMap={holidayMap}
-            // 나중에 셀에서 점 표시할 때 사용
-            // dateMetaMap={dateMetaMap}
+            dateMetaMap={dateMetaMap}
             onPressDate={(dateString, layout) => {
               if (dateString === selectedDate && layout) {
                 openDetailCard(layout);

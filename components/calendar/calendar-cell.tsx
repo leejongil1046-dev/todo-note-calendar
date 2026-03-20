@@ -2,23 +2,25 @@ import React, { useRef } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { HolidayItem } from "@/lib/api/holidays";
-import type { CalendarCellData } from "@/types/calendar-types";
+import type { CalendarCellData, DateMeta } from "@/types/calendar-types";
 
 type CalendarCellProps = {
   cell: CalendarCellData;
   weekdayIndex: number;
+  holiday?: HolidayItem;
+  dateMeta?: DateMeta;
   onPress?: (
     cell: CalendarCellData,
     layoutInWindow?: { x: number; y: number; width: number; height: number },
   ) => void;
-  holiday?: HolidayItem;
 };
 
 export const CalendarCell = ({
   cell,
   weekdayIndex,
-  onPress,
   holiday,
+  dateMeta,
+  onPress,
 }: CalendarCellProps) => {
   const ref = useRef<View | null>(null);
 
@@ -35,10 +37,10 @@ export const CalendarCell = ({
     onPress(cell);
   };
 
-  const isSunday = weekdayIndex === 0;
-  const isWeekday = weekdayIndex > 0 && weekdayIndex < 6;
-  const isSaturday = weekdayIndex === 6;
-  const isHoliday = !!holiday?.isHoliday;
+  // const isSunday = weekdayIndex === 0;
+  // const isWeekday = weekdayIndex > 0 && weekdayIndex < 6;
+  // const isSaturday = weekdayIndex === 6;
+  // const isHoliday = !!holiday?.isHoliday;
 
   return (
     <Pressable
@@ -53,18 +55,29 @@ export const CalendarCell = ({
       <View
         style={[
           styles.dayBadge,
-          cell.isToday && (isSunday || isHoliday) && styles.todaySundayBadge,
-          cell.isToday && isWeekday && !isHoliday && styles.todayWeekDayBadge,
-          cell.isToday && isSaturday && !isHoliday && styles.todaySaturDayBadge,
+          {
+            backgroundColor: !cell.isToday
+              ? "#FFFFFF"
+              : dateMeta?.dayTone === "red"
+                ? "#DC2626"
+                : dateMeta?.dayTone === "blue"
+                  ? "#2563EB"
+                  : "#000000",
+          },
         ]}
       >
         <Text
           style={[
             styles.dayText,
-            (isSunday || isHoliday) && styles.sundayText,
-            isWeekday && !isHoliday && styles.weekdayText,
-            isSaturday && !isHoliday && styles.saturdayText,
-            cell.isToday && styles.todayText,
+            {
+              color: cell.isToday
+                ? "#FFFFFF"
+                : dateMeta?.dayTone === "red"
+                  ? "#DC2626"
+                  : dateMeta?.dayTone === "blue"
+                    ? "#2563EB"
+                    : "#000000",
+            },
           ]}
         >
           {cell.day}
@@ -106,39 +119,9 @@ const styles = StyleSheet.create({
     marginTop: 3,
     paddingBottom: 0.5,
   },
-  selectedSundayBadge: { backgroundColor: "#DC2626" },
-  selectedWeekDayBadge: { backgroundColor: "#111827" },
-  selectedSaturDayBadge: { backgroundColor: "#2563EB" },
-  todaySundayBadge: {
-    borderWidth: 1,
-    borderColor: "#DC2626",
-    backgroundColor: "#DC2626",
-  },
-  todayWeekDayBadge: {
-    borderWidth: 1,
-    borderColor: "#000000",
-    backgroundColor: "#000000",
-  },
-  todaySaturDayBadge: {
-    borderWidth: 1,
-    borderColor: "#2563EB",
-    backgroundColor: "#2563EB",
-  },
   dayText: {
     fontSize: 12,
     fontWeight: "500",
-  },
-  todayText: {
-    color: "#FFFFFF",
-  },
-  sundayText: {
-    color: "#DC2626",
-  },
-  weekdayText: {
-    color: "#000000",
-  },
-  saturdayText: {
-    color: "#2563EB",
   },
   holidayLabel: {
     fontSize: 8,
