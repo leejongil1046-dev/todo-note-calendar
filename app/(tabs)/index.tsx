@@ -1,16 +1,14 @@
 import { AppTopBar } from "@/components/app-top-bar";
 import { Calendar } from "@/components/calendar/calendar";
 import { DateDetailModal } from "@/components/date-detail-modal";
+import { useCalendarSummary } from "@/hooks/calendar/use-calendar-summary";
 import { useDateDetailModal } from "@/hooks/date/use-date-detail-modal";
-import { buildDateMetaMap, buildMonthCells } from "@/lib/calendar/date-utils";
 import { getKoreaTodayParts } from "@/lib/date/get-korea-today-parts";
-import { db, initDb } from "@/lib/db/db";
-import { getTodoSummaryForDate } from "@/lib/db/todos";
 import { buildHolidayMapFromSeedYears } from "@/lib/holiday";
 import { buildHolidaySeedByYears, HolidayMap } from "@/lib/holidays-cache";
-import type { TodoSummary, TodoSummaryByDate } from "@/types/calendar-types";
+
 import Constants from "expo-constants";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -27,31 +25,17 @@ export default function CalendarScreen() {
   const [calendarYear, setCalendarYear] = useState(koreaToday.year);
   const [calendarMonth, setCalendarMonth] = useState(koreaToday.month);
 
-  const readTodoSummaryByMonth = useCallback(
-    (year: number, month: number): TodoSummaryByDate => {
-      initDb();
-
-      const next: TodoSummaryByDate = {};
-      const cells = buildMonthCells(year, month);
-
-      for (const cell of cells) {
-        next[cell.dateString] = getTodoSummaryForDate(db, cell.dateString);
-      }
-
-      return next;
-    },
-    [],
-  );
-
-  const [todoSummaryByDate, setTodoSummaryByDate] = useState<TodoSummaryByDate>(
-    () => {
-      return readTodoSummaryByMonth(koreaToday.year, koreaToday.month);
-    },
-  );
-
   const holidayMap = useMemo<HolidayMap>(() => {
     return buildHolidayMapFromSeedYears([...HOLIDAY_YEARS]);
   }, []);
+
+  const { dateMetaMap, selectedDateMeta, handleTodoSummaryChanged } =
+    useCalendarSummary({
+      calendarYear,
+      calendarMonth,
+      selectedDate,
+      holidayMap,
+    });
 
   const {
     isDateCardOpen,
@@ -73,30 +57,6 @@ export default function CalendarScreen() {
 
     load();
   }, []);
-
-  const handleTodoSummaryChanged = useCallback(
-    (dateString: string, summary: TodoSummary) => {
-      setTodoSummaryByDate((prev) => ({
-        ...prev,
-        [dateString]: summary,
-      }));
-    },
-    [],
-  );
-
-  const monthCells = useMemo(() => {
-    return buildMonthCells(calendarYear, calendarMonth, selectedDate);
-  }, [calendarYear, calendarMonth, selectedDate]);
-
-  useEffect(() => {
-    setTodoSummaryByDate(readTodoSummaryByMonth(calendarYear, calendarMonth));
-  }, [calendarYear, calendarMonth, readTodoSummaryByMonth]);
-
-  const dateMetaMap = useMemo(() => {
-    return buildDateMetaMap(monthCells, holidayMap, todoSummaryByDate);
-  }, [monthCells, holidayMap, todoSummaryByDate]);
-
-  const selectedDateMeta = dateMetaMap[selectedDate] ?? null;
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>

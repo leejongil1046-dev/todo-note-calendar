@@ -48,12 +48,6 @@ export const CalendarCell = ({
     onPress(cell);
   };
 
-  // if (dateMeta.dateString === "2026-03-03") {
-  //   console.log(dateMeta);
-  //   console.log(visiblePreviews);
-  //   console.log(extraTodoCount);
-  // }
-
   return (
     <Pressable
       ref={ref}
