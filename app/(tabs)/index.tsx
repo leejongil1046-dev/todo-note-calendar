@@ -70,8 +70,8 @@ export default function CalendarScreen() {
 
     Animated.timing(detailProgress, {
       toValue: 1,
-      duration: 250,
-      easing: Easing.out(Easing.ease),
+      duration: 300,
+      easing: Easing.out(Easing.cubic),
       useNativeDriver: false,
     }).start();
 
@@ -84,7 +84,7 @@ export default function CalendarScreen() {
         easing: Easing.out(Easing.ease),
         useNativeDriver: true,
       }).start();
-    }, 300);
+    }, 200);
   };
 
   const closeDetailCard = () => {
@@ -100,8 +100,8 @@ export default function CalendarScreen() {
 
       Animated.timing(detailProgress, {
         toValue: 0,
-        duration: 250,
-        easing: Easing.in(Easing.ease),
+        duration: 300,
+        easing: Easing.in(Easing.cubic),
         useNativeDriver: false,
       }).start(({ finished }) => {
         if (finished) {
