@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useMemo, useRef } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { HolidayItem } from "@/lib/api/holidays";
@@ -7,8 +7,8 @@ import type { CalendarCellData, DateMeta } from "@/types/calendar-types";
 type CalendarCellProps = {
   cell: CalendarCellData;
   weekdayIndex: number;
-  holiday?: HolidayItem;
-  dateMeta?: DateMeta;
+  holiday: HolidayItem;
+  dateMeta: DateMeta;
   onPress?: (
     cell: CalendarCellData,
     layoutInWindow?: { x: number; y: number; width: number; height: number },
@@ -24,6 +24,17 @@ export const CalendarCell = ({
 }: CalendarCellProps) => {
   const ref = useRef<View | null>(null);
 
+  const maxVisiblePreviewCount = dateMeta.isHoliday ? 2 : 3;
+
+  const visiblePreviews = useMemo(() => {
+    return dateMeta.todoPreviews.slice(0, maxVisiblePreviewCount);
+  }, [dateMeta.todoPreviews, maxVisiblePreviewCount]);
+
+  const extraTodoCount = Math.max(
+    0,
+    dateMeta.todoCount - maxVisiblePreviewCount,
+  );
+
   const handlePress = () => {
     if (!onPress) return;
 
@@ -37,10 +48,11 @@ export const CalendarCell = ({
     onPress(cell);
   };
 
-  // const isSunday = weekdayIndex === 0;
-  // const isWeekday = weekdayIndex > 0 && weekdayIndex < 6;
-  // const isSaturday = weekdayIndex === 6;
-  // const isHoliday = !!holiday?.isHoliday;
+  // if (dateMeta.dateString === "2026-03-03") {
+  //   console.log(dateMeta);
+  //   console.log(visiblePreviews);
+  //   console.log(extraTodoCount);
+  // }
 
   return (
     <Pressable
@@ -49,7 +61,6 @@ export const CalendarCell = ({
         styles.cell,
         cell.isSelected && styles.isSelectedCell,
         !cell.inCurrentMonth && styles.outsideMonthCell,
-        // { backgroundColor: dateMeta?.hasTodo ? "yellow" : "white" },
       ]}
       onPress={handlePress}
     >
@@ -59,9 +70,9 @@ export const CalendarCell = ({
           {
             backgroundColor: !cell.isToday
               ? "#FFFFFF"
-              : dateMeta?.dayTone === "red"
+              : dateMeta.dayTone === "red"
                 ? "#DC2626"
-                : dateMeta?.dayTone === "blue"
+                : dateMeta.dayTone === "blue"
                   ? "#2563EB"
                   : "#000000",
           },
@@ -73,9 +84,9 @@ export const CalendarCell = ({
             {
               color: cell.isToday
                 ? "#FFFFFF"
-                : dateMeta?.dayTone === "red"
+                : dateMeta.dayTone === "red"
                   ? "#DC2626"
-                  : dateMeta?.dayTone === "blue"
+                  : dateMeta.dayTone === "blue"
                     ? "#2563EB"
                     : "#000000",
             },
@@ -84,14 +95,36 @@ export const CalendarCell = ({
           {cell.day}
         </Text>
       </View>
-      {holiday && (
-        <Text style={styles.holidayLabel} numberOfLines={1}>
-          {holiday.name}
-        </Text>
-      )}
-      {(dateMeta?.todoCount ?? 0) > 0 && (
-        <View style={styles.hasTodoBadge}></View>
-      )}
+
+      <View style={styles.todoContainer}>
+        {holiday && (
+          <View style={styles.holidayCard}>
+            <Text style={styles.holidayLabel} numberOfLines={1}>
+              {holiday.name}
+            </Text>
+          </View>
+        )}
+
+        {visiblePreviews.map((preview, index) => (
+          <View
+            style={[
+              styles.todoPreviewCard,
+              { backgroundColor: preview.categoryColor },
+            ]}
+            key={`${preview.categoryName}-${preview.categoryColor}-${index}`}
+          >
+            <Text style={styles.todoPreviewText} numberOfLines={1}>
+              {preview.categoryName}
+            </Text>
+          </View>
+        ))}
+
+        {extraTodoCount > 0 && (
+          <View style={styles.moreTodoCard}>
+            <Text style={styles.moreTodoText}>외 {extraTodoCount}개</Text>
+          </View>
+        )}
+      </View>
     </Pressable>
   );
 };
@@ -99,7 +132,7 @@ export const CalendarCell = ({
 const styles = StyleSheet.create({
   cell: {
     width: "14.2857%",
-    aspectRatio: 2 / 3,
+    aspectRatio: 1 / 2,
     alignItems: "center",
     justifyContent: "flex-start",
     borderWidth: 1.5,
@@ -127,19 +160,44 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "500",
   },
+  todoContainer: {
+    width: "100%",
+    alignItems: "center",
+    gap: 3,
+  },
+  holidayCard: {
+    width: "100%",
+    alignItems: "center",
+    paddingVertical: 2,
+    borderRadius: 10,
+    backgroundColor: "#FEECEC",
+  },
   holidayLabel: {
     fontSize: 8,
     fontWeight: "500",
     color: "#DC2626",
   },
-  hasTodoBadge: {
-    position: "absolute",
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: "#0064E0",
-    left: "50%",
-    marginLeft: -2,
-    bottom: "30%",
+  todoPreviewCard: {
+    width: "100%",
+    alignItems: "center",
+    paddingVertical: 2,
+    borderRadius: 10,
+  },
+  todoPreviewText: {
+    fontSize: 8,
+    fontWeight: "500",
+    color: "#000000",
+  },
+  moreTodoCard: {
+    width: "100%",
+    alignItems: "center",
+    paddingVertical: 2,
+    borderRadius: 10,
+    backgroundColor: "#FFFFFF",
+  },
+  moreTodoText: {
+    fontSize: 8,
+    fontWeight: "500",
+    color: "#374151",
   },
 });

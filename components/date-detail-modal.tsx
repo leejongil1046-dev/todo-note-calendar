@@ -6,7 +6,7 @@ import { useTodoCreate } from "@/hooks/todo/use-todo-create";
 import { useTodoDelete } from "@/hooks/todo/use-todo-delete";
 import { db } from "@/lib/db/db";
 import { getTodosForDate, type TodoForDate } from "@/lib/db/todos";
-import type { DateMeta } from "@/types/calendar-types";
+import type { DateMeta, TodoSummary } from "@/types/calendar-types";
 import { Text } from "@react-navigation/elements";
 import React, { useCallback, useEffect, useState } from "react";
 import {
@@ -36,7 +36,17 @@ type DateDetailModalProps = {
   meta: DateMeta | null;
   onRequestClose: () => void;
   isCardContentMounted: boolean;
-  onTodoCountChanged: (dateString: string, count: number) => void;
+  onTodoSummaryChanged: (dateString: string, summary: TodoSummary) => void;
+};
+
+const buildTodoSummaryFromTodos = (todos: TodoForDate[]): TodoSummary => {
+  return {
+    count: todos.length,
+    previews: todos.slice(0, 3).map((todo) => ({
+      categoryName: todo.categoryName,
+      categoryColor: todo.categoryColor,
+    })),
+  };
 };
 
 export function DateDetailModal({
@@ -47,7 +57,7 @@ export function DateDetailModal({
   meta,
   onRequestClose,
   isCardContentMounted,
-  onTodoCountChanged,
+  onTodoSummaryChanged,
 }: DateDetailModalProps) {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [todos, setTodos] = useState<TodoForDate[]>([]);
@@ -58,9 +68,11 @@ export function DateDetailModal({
     if (!dateString) return;
 
     const nextTodos = getTodosForDate(db, dateString);
+    const nextSummary = buildTodoSummaryFromTodos(nextTodos);
+
     setTodos(nextTodos);
-    onTodoCountChanged(dateString, nextTodos.length);
-  }, [dateString, onTodoCountChanged]);
+    onTodoSummaryChanged(dateString, nextSummary);
+  }, [dateString, onTodoSummaryChanged]);
 
   const {
     isDeleteConfirmOpen,

@@ -5,10 +5,10 @@ import { useDateDetailModal } from "@/hooks/date/use-date-detail-modal";
 import { buildDateMetaMap, buildMonthCells } from "@/lib/calendar/date-utils";
 import { getKoreaTodayParts } from "@/lib/date/get-korea-today-parts";
 import { db, initDb } from "@/lib/db/db";
-import { getTodoCountForDate } from "@/lib/db/todos";
+import { getTodoSummaryForDate } from "@/lib/db/todos";
 import { buildHolidayMapFromSeedYears } from "@/lib/holiday";
 import { buildHolidaySeedByYears, HolidayMap } from "@/lib/holidays-cache";
-import type { TodoCountByDate } from "@/types/calendar-types";
+import type { TodoSummary, TodoSummaryByDate } from "@/types/calendar-types";
 import Constants from "expo-constants";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
@@ -26,19 +26,26 @@ export default function CalendarScreen() {
   const [selectedDate, setSelectedDate] = useState(koreaToday.dateString);
   const [calendarYear, setCalendarYear] = useState(koreaToday.year);
   const [calendarMonth, setCalendarMonth] = useState(koreaToday.month);
-  const [todoCountByDate, setTodoCountByDate] = useState<TodoCountByDate>(
-    () => {
-      // 첫 화면(오늘 기준 월)을 열자마자 DB에서 todo 개수 반영.
+
+  const readTodoSummaryByMonth = useCallback(
+    (year: number, month: number): TodoSummaryByDate => {
       initDb();
 
-      const next: TodoCountByDate = {};
-      const cells = buildMonthCells(koreaToday.year, koreaToday.month);
+      const next: TodoSummaryByDate = {};
+      const cells = buildMonthCells(year, month);
 
       for (const cell of cells) {
-        next[cell.dateString] = getTodoCountForDate(db, cell.dateString);
+        next[cell.dateString] = getTodoSummaryForDate(db, cell.dateString);
       }
 
       return next;
+    },
+    [],
+  );
+
+  const [todoSummaryByDate, setTodoSummaryByDate] = useState<TodoSummaryByDate>(
+    () => {
+      return readTodoSummaryByMonth(koreaToday.year, koreaToday.month);
     },
   );
 
@@ -67,16 +74,12 @@ export default function CalendarScreen() {
     load();
   }, []);
 
-  const handleTodoCountChanged = useCallback(
-    (dateString: string, count: number) => {
-      setTodoCountByDate((prev) => {
-        if (prev[dateString] === count) return prev;
-
-        return {
-          ...prev,
-          [dateString]: count,
-        };
-      });
+  const handleTodoSummaryChanged = useCallback(
+    (dateString: string, summary: TodoSummary) => {
+      setTodoSummaryByDate((prev) => ({
+        ...prev,
+        [dateString]: summary,
+      }));
     },
     [],
   );
@@ -86,28 +89,14 @@ export default function CalendarScreen() {
   }, [calendarYear, calendarMonth, selectedDate]);
 
   useEffect(() => {
-    // 캘린더가 다른 달로 전환될 때, 해당 월의 hasTodo/todoCount도 DB 기준으로 다시 채운다.
-    // (modal은 meta 자체가 있는지만 중요하지만, 배지/색상까지 정확히 보이게 하기 위함)
-    initDb();
-
-    const next: TodoCountByDate = {};
-    const cells = buildMonthCells(calendarYear, calendarMonth);
-    for (const cell of cells) {
-      next[cell.dateString] = getTodoCountForDate(db, cell.dateString);
-    }
-
-    setTodoCountByDate(next);
-  }, [calendarYear, calendarMonth]);
+    setTodoSummaryByDate(readTodoSummaryByMonth(calendarYear, calendarMonth));
+  }, [calendarYear, calendarMonth, readTodoSummaryByMonth]);
 
   const dateMetaMap = useMemo(() => {
-    return buildDateMetaMap(monthCells, holidayMap, todoCountByDate);
-  }, [monthCells, holidayMap, todoCountByDate]);
-
-  // console.log(JSON.stringify(dateMetaMap, null, 2));
+    return buildDateMetaMap(monthCells, holidayMap, todoSummaryByDate);
+  }, [monthCells, holidayMap, todoSummaryByDate]);
 
   const selectedDateMeta = dateMetaMap[selectedDate] ?? null;
-
-  // console.log(selectedDate);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
@@ -160,7 +149,7 @@ export default function CalendarScreen() {
         contentOpacity={contentOpacity}
         onRequestClose={closeDetailCard}
         isCardContentMounted={isCardContentMounted}
-        onTodoCountChanged={handleTodoCountChanged}
+        onTodoSummaryChanged={handleTodoSummaryChanged}
       />
     </SafeAreaView>
   );

@@ -1,5 +1,6 @@
 import type { SQLiteDatabase } from "expo-sqlite";
 
+import { TodoSummary } from "@/types/calendar-types";
 import type { TodoCategory } from "@/types/todo-types";
 
 export type RepeatType = "daily" | "weekday" | "weekend";
@@ -168,21 +169,37 @@ export function getTodosForDate(
   return Array.from(todoMap.values());
 }
 
-export function getTodoCountForDate(
+export function getTodoSummaryForDate(
   db: SQLiteDatabase,
   dateString: string,
-): number {
-  const row = db.getFirstSync<{ count: number }>(
+): TodoSummary {
+  const rows = db.getAllSync<{
+    todoId: number;
+    categoryName: string;
+    categoryColor: string;
+  }>(
     `
-        SELECT COUNT(*) AS count
-        FROM todos t
-        WHERE t.start_date <= ?
-          AND t.end_date >= ?
-      `,
+      SELECT
+        t.id AS todoId,
+        c.name AS categoryName,
+        c.color AS categoryColor
+      FROM todos t
+      JOIN todo_categories c
+        ON c.id = t.category_id
+      WHERE t.start_date <= ?
+        AND t.end_date >= ?
+      ORDER BY t.created_at ASC
+    `,
     [dateString, dateString],
   );
 
-  return row?.count ?? 0;
+  return {
+    count: rows.length,
+    previews: rows.slice(0, 3).map((row) => ({
+      categoryName: row.categoryName,
+      categoryColor: row.categoryColor,
+    })),
+  };
 }
 
 export function updateTodoTaskDone(

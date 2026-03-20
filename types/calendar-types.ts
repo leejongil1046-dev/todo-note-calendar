@@ -11,7 +11,17 @@ export type CalendarCellData = {
 
 export type DayTone = "red" | "blue" | "default";
 
-export type TodoCountByDate = Record<string, number>;
+export type TodoPreview = {
+  categoryName: string;
+  categoryColor: string;
+};
+
+export type TodoSummary = {
+  count: number;
+  previews: TodoPreview[];
+};
+
+export type TodoSummaryByDate = Record<string, TodoSummary>;
 
 export type DateMeta = {
   dateString: string; // "YYYY-MM-DD"
@@ -30,4 +40,5 @@ export type DateMeta = {
 
   hasTodo: boolean;
   todoCount: number;
+  todoPreviews: TodoPreview[];
 };

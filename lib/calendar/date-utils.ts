@@ -1,7 +1,7 @@
 import type {
   CalendarCellData,
   DateMeta,
-  TodoCountByDate,
+  TodoSummaryByDate,
 } from "../../types/calendar-types";
 import type { HolidayMap } from "../holidays-cache";
 
@@ -216,7 +216,7 @@ export const getDayTone = (
 export const buildDateMetaMap = (
   cells: CalendarCellData[],
   holidayMap?: HolidayMap | null,
-  todoCountByDate: TodoCountByDate = {},
+  todoSummaryByDate: TodoSummaryByDate = {},
 ) => {
   const metaMap: Record<string, DateMeta> = {};
 
@@ -231,7 +231,10 @@ export const buildDateMetaMap = (
     const isHoliday = !!holiday?.isHoliday;
     const holidayName = holiday?.name;
 
-    const todoCount = todoCountByDate[cell.dateString] ?? 0;
+    const todoSummary = todoSummaryByDate[cell.dateString] ?? {
+      count: 0,
+      previews: [],
+    };
 
     metaMap[cell.dateString] = {
       dateString: cell.dateString,
@@ -244,8 +247,9 @@ export const buildDateMetaMap = (
       isHoliday,
       holidayName,
       dayTone: getDayTone(weekdayIndex, isHoliday),
-      hasTodo: todoCount > 0,
-      todoCount,
+      hasTodo: todoSummary.count > 0,
+      todoCount: todoSummary.count,
+      todoPreviews: todoSummary.previews,
     };
   });
 

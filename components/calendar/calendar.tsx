@@ -12,9 +12,9 @@ type CalendarProps = {
   currentYear: number;
   currentMonth: number;
   onChangeYearMonth: (year: number, month: number) => void;
-  selectedDate?: string;
-  holidayMap?: HolidayMap;
-  dateMetaMap?: Record<string, DateMeta>;
+  selectedDate: string;
+  holidayMap: HolidayMap;
+  dateMetaMap: Record<string, DateMeta>;
   onPressDate?: (
     dateString: string,
     layoutInWindow?: { x: number; y: number; width: number; height: number },

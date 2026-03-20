@@ -8,9 +8,9 @@ import { CalendarWeekRow } from "./calendar-week-row";
 type CalendarGridProps = {
   year: number;
   month: number;
-  selectedDate?: string;
-  holidayMap?: HolidayMap;
-  dateMetaMap?: Record<string, DateMeta>;
+  selectedDate: string;
+  holidayMap: HolidayMap;
+  dateMetaMap: Record<string, DateMeta>;
   onPressDate?: (
     cell: CalendarCellData,
     layoutInWindow?: { x: number; y: number; width: number; height: number },
