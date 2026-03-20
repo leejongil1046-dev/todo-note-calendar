@@ -11,7 +11,7 @@ import {
 } from "@/lib/holidays-cache";
 import Constants from "expo-constants";
 import React, { useEffect, useRef, useState } from "react";
-import { Animated, ScrollView, StyleSheet, View } from "react-native";
+import { Animated, Easing, ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const SERVICE_KEY =
@@ -21,10 +21,10 @@ const SHOULD_REFRESH_HOLIDAYS = false;
 
 export default function CalendarScreen() {
   const koreaToday = getKoreaTodayParts();
-
   const [selectedDate, setSelectedDate] = useState(koreaToday.dateString);
   const [holidayMap, setHolidayMap] = useState<HolidayMap | null>(null);
   const [isDateCardOpen, setIsDateCardOpen] = useState(false);
+  const [isCardContentMounted, setIsCardContentMounted] = useState(false);
   const [detailRect, setDetailRect] = useState<{
     x: number;
     y: number;
@@ -64,40 +64,51 @@ export default function CalendarScreen() {
   }) => {
     setDetailRect(rect);
     setIsDateCardOpen(true);
+    setIsCardContentMounted(false);
     detailProgress.setValue(0);
     contentOpacity.setValue(0);
 
-    Animated.sequence([
-      Animated.timing(detailProgress, {
-        toValue: 1,
-        duration: 220,
-        useNativeDriver: false,
-      }),
+    Animated.timing(detailProgress, {
+      toValue: 1,
+      duration: 250,
+      easing: Easing.out(Easing.ease),
+      useNativeDriver: false,
+    }).start();
+
+    setTimeout(() => {
+      setIsCardContentMounted(true);
+
       Animated.timing(contentOpacity, {
         toValue: 1,
-        duration: 150,
+        duration: 200,
+        easing: Easing.out(Easing.ease),
         useNativeDriver: true,
-      }),
-    ]).start();
+      }).start();
+    }, 300);
   };
 
   const closeDetailCard = () => {
-    Animated.sequence([
-      Animated.timing(contentOpacity, {
-        toValue: 0,
-        duration: 120,
-        useNativeDriver: true,
-      }),
+    Animated.timing(contentOpacity, {
+      toValue: 0,
+      duration: 200,
+      easing: Easing.in(Easing.ease),
+      useNativeDriver: true,
+    }).start(({ finished }) => {
+      if (!finished) return;
+
+      setIsCardContentMounted(false);
+
       Animated.timing(detailProgress, {
         toValue: 0,
-        duration: 180,
+        duration: 250,
+        easing: Easing.in(Easing.ease),
         useNativeDriver: false,
-      }),
-    ]).start(({ finished }) => {
-      if (finished) {
-        setIsDateCardOpen(false);
-        setDetailRect(null);
-      }
+      }).start(({ finished }) => {
+        if (finished) {
+          setIsDateCardOpen(false);
+          setDetailRect(null);
+        }
+      });
     });
   };
 
@@ -167,6 +178,7 @@ export default function CalendarScreen() {
         progress={detailProgress}
         contentOpacity={contentOpacity}
         onRequestClose={closeDetailCard}
+        isCardContentMounted={isCardContentMounted}
       />
     </SafeAreaView>
   );

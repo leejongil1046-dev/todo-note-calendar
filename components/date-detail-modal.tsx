@@ -31,6 +31,7 @@ type DateDetailModalProps = {
   contentOpacity: Animated.Value;
   meta: DateMeta | null;
   onRequestClose: () => void;
+  isCardContentMounted: boolean;
 };
 
 export function DateDetailModal({
@@ -40,6 +41,7 @@ export function DateDetailModal({
   contentOpacity,
   meta,
   onRequestClose,
+  isCardContentMounted,
 }: DateDetailModalProps) {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [todos, setTodos] = useState<TodoForDate[]>([]);
@@ -87,13 +89,7 @@ export function DateDetailModal({
 
   if (!visible || !rect || !meta) return null;
 
-  // iOS는 측정 좌표가 잘 맞는데, Android는 모달 배치 좌표계가 safe-area만큼
-  // 달라서 시작 y를 보정해줘야 합니다.
   const initialTop = Platform.OS === "android" ? rect.y + topOffset : rect.y;
-
-  console.log("rect", rect);
-  console.log("screenWidth", screenWidth);
-  console.log("topOffset", topOffset);
 
   return (
     <>
@@ -138,48 +134,57 @@ export function DateDetailModal({
               },
             ]}
           >
-            <Animated.View
-              style={[styles.contentWrapper, { opacity: contentOpacity }]}
-            >
-              <Text style={styles.dateText}>
-                {meta.year}년 {meta.month}월 {meta.day}일 ({meta.weekdayLabel})
-              </Text>
+            {isCardContentMounted && (
+              <>
+                <Animated.View
+                  style={[styles.contentWrapper, { opacity: contentOpacity }]}
+                >
+                  <Text style={styles.dateText}>
+                    {meta.year}년 {meta.month}월 {meta.day}일 (
+                    {meta.weekdayLabel})
+                  </Text>
 
-              <ScrollView
-                style={styles.scrollView}
-                contentContainerStyle={styles.scrollContent}
-                showsVerticalScrollIndicator={false}
-              >
-                {meta.isHoliday && meta.holidayName && (
-                  <View style={styles.holidayCard}>
-                    <Text style={styles.holidayText}>{meta.holidayName}</Text>
-                  </View>
-                )}
+                  <ScrollView
+                    style={styles.scrollView}
+                    contentContainerStyle={styles.scrollContent}
+                    showsVerticalScrollIndicator={false}
+                  >
+                    {meta.isHoliday && meta.holidayName && (
+                      <View style={styles.holidayCard}>
+                        <Text style={styles.holidayText}>
+                          {meta.holidayName}
+                        </Text>
+                      </View>
+                    )}
 
-                {todos.length === 0 ? (
-                  <Text style={styles.emptyTodosText}>아직 할 일이 없어요</Text>
-                ) : (
-                  todos.map((todo) => (
-                    <TodoCard
-                      key={todo.todoId}
-                      todo={todo}
-                      onRequestDelete={handleRequestDeleteTodo}
-                    />
-                  ))
-                )}
-              </ScrollView>
-            </Animated.View>
+                    {todos.length === 0 ? (
+                      <Text style={styles.emptyTodosText}>
+                        아직 할 일이 없어요
+                      </Text>
+                    ) : (
+                      todos.map((todo) => (
+                        <TodoCard
+                          key={todo.todoId}
+                          todo={todo}
+                          onRequestDelete={handleRequestDeleteTodo}
+                        />
+                      ))
+                    )}
+                  </ScrollView>
+                </Animated.View>
 
-            <Animated.View
-              style={[styles.floatingButton, { opacity: contentOpacity }]}
-            >
-              <Pressable
-                style={styles.floatingButtonPressable}
-                onPress={() => setIsCreateModalOpen(true)}
-              >
-                <Plus width={50} height={50} />
-              </Pressable>
-            </Animated.View>
+                <Animated.View
+                  style={[styles.floatingButton, { opacity: contentOpacity }]}
+                >
+                  <Pressable
+                    style={styles.floatingButtonPressable}
+                    onPress={() => setIsCreateModalOpen(true)}
+                  >
+                    <Plus width={50} height={50} />
+                  </Pressable>
+                </Animated.View>
+              </>
+            )}
           </Animated.View>
         </View>
 
