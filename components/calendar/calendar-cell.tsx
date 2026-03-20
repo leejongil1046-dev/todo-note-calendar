@@ -157,7 +157,7 @@ const styles = StyleSheet.create({
   todoContainer: {
     width: "100%",
     alignItems: "center",
-    gap: 3,
+    gap: 2,
   },
   holidayCard: {
     width: "100%",
@@ -167,8 +167,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#FEECEC",
   },
   holidayLabel: {
-    fontSize: 8,
-    fontWeight: "500",
+    fontSize: 9,
+    fontWeight: "400",
     color: "#DC2626",
   },
   todoPreviewCard: {
@@ -178,8 +178,8 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   todoPreviewText: {
-    fontSize: 8,
-    fontWeight: "500",
+    fontSize: 9,
+    fontWeight: "400",
     color: "#000000",
   },
   moreTodoCard: {
@@ -191,7 +191,7 @@ const styles = StyleSheet.create({
   },
   moreTodoText: {
     fontSize: 8,
-    fontWeight: "500",
+    fontWeight: "400",
     color: "#374151",
   },
 });
