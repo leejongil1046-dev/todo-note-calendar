@@ -8,7 +8,7 @@ import { buildHolidayMapFromSeedYears } from "@/lib/holiday";
 import { buildHolidaySeedByYears, HolidayMap } from "@/lib/holidays-cache";
 import type { TodoCountByDate } from "@/types/calendar-types";
 import Constants from "expo-constants";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -20,7 +20,9 @@ const HOLIDAY_YEARS = [2024, 2025, 2026, 2027] as const;
 
 export default function CalendarScreen() {
   const koreaToday = getKoreaTodayParts();
+
   const [selectedDate, setSelectedDate] = useState(koreaToday.dateString);
+  const [todoCountByDate, setTodoCountByDate] = useState<TodoCountByDate>({});
 
   const holidayMap = useMemo<HolidayMap>(() => {
     return buildHolidayMapFromSeedYears([...HOLIDAY_YEARS]);
@@ -47,10 +49,19 @@ export default function CalendarScreen() {
     load();
   }, []);
 
-  // TODO: 나중에는 DB에서 날짜별 할 일 개수 조회 결과로 교체
-  const todoCountByDate: TodoCountByDate = useMemo(() => {
-    return {};
-  }, []);
+  const handleTodoCountChanged = useCallback(
+    (dateString: string, count: number) => {
+      setTodoCountByDate((prev) => {
+        if (prev[dateString] === count) return prev;
+
+        return {
+          ...prev,
+          [dateString]: count,
+        };
+      });
+    },
+    [],
+  );
 
   const monthCells = useMemo(() => {
     return buildMonthCells(koreaToday.year, koreaToday.month, selectedDate);
@@ -88,6 +99,8 @@ export default function CalendarScreen() {
             initialMonth={koreaToday.month}
             selectedDate={selectedDate}
             holidayMap={holidayMap}
+            // 나중에 셀에서 점 표시할 때 사용
+            // dateMetaMap={dateMetaMap}
             onPressDate={(dateString, layout) => {
               if (dateString === selectedDate && layout) {
                 openDetailCard(layout);
@@ -108,13 +121,17 @@ export default function CalendarScreen() {
         contentOpacity={contentOpacity}
         onRequestClose={closeDetailCard}
         isCardContentMounted={isCardContentMounted}
+        onTodoCountChanged={handleTodoCountChanged}
       />
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: "#FFFFFF" },
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#FFFFFF",
+  },
   container: {
     flex: 1,
     alignItems: "center",

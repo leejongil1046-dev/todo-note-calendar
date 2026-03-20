@@ -1,5 +1,9 @@
 import Plus from "@/assets/images/plus.svg";
 import { ConfirmModal } from "@/components/common/confirm-modal";
+import { TodoCard } from "@/components/todo/todo-card/todo-card";
+import { TodoCreateModal } from "@/components/todo/todo-create/todo-create-modal";
+import { useTodoCreate } from "@/hooks/todo/use-todo-create";
+import { useTodoDelete } from "@/hooks/todo/use-todo-delete";
 import { db } from "@/lib/db/db";
 import { getTodosForDate, type TodoForDate } from "@/lib/db/todos";
 import type { DateMeta } from "@/types/calendar-types";
@@ -17,12 +21,12 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { useTodoCreate } from "@/hooks/todo/use-todo-create";
-import { useTodoDelete } from "@/hooks/todo/use-todo-delete";
-import { TodoCard } from "./todo/todo-card/todo-card";
-import { TodoCreateModal } from "./todo/todo-create/todo-create-modal";
-
-type Rect = { x: number; y: number; width: number; height: number };
+type Rect = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
 
 type DateDetailModalProps = {
   visible: boolean;
@@ -32,6 +36,7 @@ type DateDetailModalProps = {
   meta: DateMeta | null;
   onRequestClose: () => void;
   isCardContentMounted: boolean;
+  onTodoCountChanged: (dateString: string, count: number) => void;
 };
 
 export function DateDetailModal({
@@ -42,6 +47,7 @@ export function DateDetailModal({
   meta,
   onRequestClose,
   isCardContentMounted,
+  onTodoCountChanged,
 }: DateDetailModalProps) {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [todos, setTodos] = useState<TodoForDate[]>([]);
@@ -50,8 +56,11 @@ export function DateDetailModal({
 
   const refreshTodos = useCallback(() => {
     if (!dateString) return;
-    setTodos(getTodosForDate(db, dateString));
-  }, [dateString]);
+
+    const nextTodos = getTodosForDate(db, dateString);
+    setTodos(nextTodos);
+    onTodoCountChanged(dateString, nextTodos.length);
+  }, [dateString, onTodoCountChanged]);
 
   const {
     isDeleteConfirmOpen,
