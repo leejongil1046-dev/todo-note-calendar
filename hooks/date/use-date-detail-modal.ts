@@ -38,14 +38,33 @@ export function useDateDetailModal() {
       detailProgress.setValue(0);
       contentOpacity.setValue(0);
 
+      // Animated.timing(detailProgress, {
+      //   toValue: 1,
+      //   duration: 250,
+      //   easing: Easing.out(Easing.ease),
+      //   useNativeDriver: false,
+      // }).start();
+
+      // mountTimerRef.current = setTimeout(() => {
+      //   setIsCardContentMounted(true);
+
+      //   Animated.timing(contentOpacity, {
+      //     toValue: 1,
+      //     duration: 200,
+      //     easing: Easing.out(Easing.ease),
+      //     useNativeDriver: true,
+      //   }).start();
+
+      //   mountTimerRef.current = null;
+      // }, 300);
       Animated.timing(detailProgress, {
         toValue: 1,
         duration: 250,
-        easing: Easing.out(Easing.ease),
+        easing: Easing.out(Easing.linear),
         useNativeDriver: false,
-      }).start();
+      }).start(({ finished }) => {
+        if (!finished) return;
 
-      mountTimerRef.current = setTimeout(() => {
         setIsCardContentMounted(true);
 
         Animated.timing(contentOpacity, {
@@ -54,9 +73,7 @@ export function useDateDetailModal() {
           easing: Easing.out(Easing.ease),
           useNativeDriver: true,
         }).start();
-
-        mountTimerRef.current = null;
-      }, 300);
+      });
     },
     [clearMountTimer, contentOpacity, detailProgress],
   );
@@ -80,7 +97,7 @@ export function useDateDetailModal() {
       Animated.timing(detailProgress, {
         toValue: 0,
         duration: 250,
-        easing: Easing.in(Easing.ease),
+        easing: Easing.in(Easing.linear),
         useNativeDriver: false,
       }).start(({ finished }) => {
         if (!finished) return;
