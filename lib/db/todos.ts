@@ -168,6 +168,23 @@ export function getTodosForDate(
   return Array.from(todoMap.values());
 }
 
+export function getTodoCountForDate(
+  db: SQLiteDatabase,
+  dateString: string,
+): number {
+  const row = db.getFirstSync<{ count: number }>(
+    `
+        SELECT COUNT(*) AS count
+        FROM todos t
+        WHERE t.start_date <= ?
+          AND t.end_date >= ?
+      `,
+    [dateString, dateString],
+  );
+
+  return row?.count ?? 0;
+}
+
 export function updateTodoTaskDone(
   db: SQLiteDatabase,
   todoId: number,

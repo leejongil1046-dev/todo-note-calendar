@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { StyleSheet, View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 
@@ -9,8 +9,9 @@ import { CalendarMonthHeader } from "./calendar-month-header";
 import { CalendarWeekdayHeader } from "./calendar-weekday-header";
 
 type CalendarProps = {
-  initialYear: number;
-  initialMonth: number;
+  currentYear: number;
+  currentMonth: number;
+  onChangeYearMonth: (year: number, month: number) => void;
   selectedDate?: string;
   holidayMap?: HolidayMap;
   dateMetaMap?: Record<string, DateMeta>;
@@ -21,34 +22,30 @@ type CalendarProps = {
 };
 
 export const Calendar = ({
-  initialYear,
-  initialMonth,
+  currentYear,
+  currentMonth,
+  onChangeYearMonth,
   selectedDate,
   holidayMap,
   dateMetaMap,
   onPressDate,
 }: CalendarProps) => {
-  const [currentYear, setCurrentYear] = useState(initialYear);
-  const [currentMonth, setCurrentMonth] = useState(initialMonth);
-
   const handlePressPrevMonth = () => {
-    setCurrentMonth((prevMonth) => {
-      if (prevMonth === 1) {
-        setCurrentYear((prevYear) => prevYear - 1);
-        return 12;
-      }
-      return prevMonth - 1;
-    });
+    if (currentMonth === 1) {
+      onChangeYearMonth(currentYear - 1, 12);
+      return;
+    }
+
+    onChangeYearMonth(currentYear, currentMonth - 1);
   };
 
   const handlePressNextMonth = () => {
-    setCurrentMonth((prevMonth) => {
-      if (prevMonth === 12) {
-        setCurrentYear((prevYear) => prevYear + 1);
-        return 1;
-      }
-      return prevMonth + 1;
-    });
+    if (currentMonth === 12) {
+      onChangeYearMonth(currentYear + 1, 1);
+      return;
+    }
+
+    onChangeYearMonth(currentYear, currentMonth + 1);
   };
 
   const visibleSelectedDate = useMemo(() => selectedDate, [selectedDate]);
@@ -66,8 +63,7 @@ export const Calendar = ({
     const newYear = clicked.getFullYear();
     const newMonth = clicked.getMonth() + 1;
 
-    setCurrentYear(newYear);
-    setCurrentMonth(newMonth);
+    onChangeYearMonth(newYear, newMonth);
     onPressDate?.(cell.dateString, layoutInWindow);
   };
 

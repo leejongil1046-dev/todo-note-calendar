@@ -250,11 +250,12 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: "#2563EB",
+    backgroundColor: "#0064E0",
   },
   label: {
     fontSize: 10,
     fontWeight: "500",
     lineHeight: 10,
+    color: "#0064E0",
   },
 });

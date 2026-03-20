@@ -4,6 +4,8 @@ import { DateDetailModal } from "@/components/date-detail-modal";
 import { useDateDetailModal } from "@/hooks/date/use-date-detail-modal";
 import { buildDateMetaMap, buildMonthCells } from "@/lib/calendar/date-utils";
 import { getKoreaTodayParts } from "@/lib/date/get-korea-today-parts";
+import { db, initDb } from "@/lib/db/db";
+import { getTodoCountForDate } from "@/lib/db/todos";
 import { buildHolidayMapFromSeedYears } from "@/lib/holiday";
 import { buildHolidaySeedByYears, HolidayMap } from "@/lib/holidays-cache";
 import type { TodoCountByDate } from "@/types/calendar-types";
@@ -22,7 +24,23 @@ export default function CalendarScreen() {
   const koreaToday = getKoreaTodayParts();
 
   const [selectedDate, setSelectedDate] = useState(koreaToday.dateString);
-  const [todoCountByDate, setTodoCountByDate] = useState<TodoCountByDate>({});
+  const [calendarYear, setCalendarYear] = useState(koreaToday.year);
+  const [calendarMonth, setCalendarMonth] = useState(koreaToday.month);
+  const [todoCountByDate, setTodoCountByDate] = useState<TodoCountByDate>(
+    () => {
+      // 첫 화면(오늘 기준 월)을 열자마자 DB에서 todo 개수 반영.
+      initDb();
+
+      const next: TodoCountByDate = {};
+      const cells = buildMonthCells(koreaToday.year, koreaToday.month);
+
+      for (const cell of cells) {
+        next[cell.dateString] = getTodoCountForDate(db, cell.dateString);
+      }
+
+      return next;
+    },
+  );
 
   const holidayMap = useMemo<HolidayMap>(() => {
     return buildHolidayMapFromSeedYears([...HOLIDAY_YEARS]);
@@ -64,8 +82,22 @@ export default function CalendarScreen() {
   );
 
   const monthCells = useMemo(() => {
-    return buildMonthCells(koreaToday.year, koreaToday.month, selectedDate);
-  }, [koreaToday.year, koreaToday.month, selectedDate]);
+    return buildMonthCells(calendarYear, calendarMonth, selectedDate);
+  }, [calendarYear, calendarMonth, selectedDate]);
+
+  useEffect(() => {
+    // 캘린더가 다른 달로 전환될 때, 해당 월의 hasTodo/todoCount도 DB 기준으로 다시 채운다.
+    // (modal은 meta 자체가 있는지만 중요하지만, 배지/색상까지 정확히 보이게 하기 위함)
+    initDb();
+
+    const next: TodoCountByDate = {};
+    const cells = buildMonthCells(calendarYear, calendarMonth);
+    for (const cell of cells) {
+      next[cell.dateString] = getTodoCountForDate(db, cell.dateString);
+    }
+
+    setTodoCountByDate(next);
+  }, [calendarYear, calendarMonth]);
 
   const dateMetaMap = useMemo(() => {
     return buildDateMetaMap(monthCells, holidayMap, todoCountByDate);
@@ -99,8 +131,12 @@ export default function CalendarScreen() {
           showsVerticalScrollIndicator={false}
         >
           <Calendar
-            initialYear={koreaToday.year}
-            initialMonth={koreaToday.month}
+            currentYear={calendarYear}
+            currentMonth={calendarMonth}
+            onChangeYearMonth={(year, month) => {
+              setCalendarYear(year);
+              setCalendarMonth(month);
+            }}
             selectedDate={selectedDate}
             holidayMap={holidayMap}
             dateMetaMap={dateMetaMap}

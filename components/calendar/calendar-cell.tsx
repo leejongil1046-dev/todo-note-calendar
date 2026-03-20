@@ -49,6 +49,7 @@ export const CalendarCell = ({
         styles.cell,
         cell.isSelected && styles.isSelectedCell,
         !cell.inCurrentMonth && styles.outsideMonthCell,
+        // { backgroundColor: dateMeta?.hasTodo ? "yellow" : "white" },
       ]}
       onPress={handlePress}
     >
@@ -87,6 +88,9 @@ export const CalendarCell = ({
         <Text style={styles.holidayLabel} numberOfLines={1}>
           {holiday.name}
         </Text>
+      )}
+      {(dateMeta?.todoCount ?? 0) > 0 && (
+        <View style={styles.hasTodoBadge}></View>
       )}
     </Pressable>
   );
@@ -127,5 +131,15 @@ const styles = StyleSheet.create({
     fontSize: 8,
     fontWeight: "500",
     color: "#DC2626",
+  },
+  hasTodoBadge: {
+    position: "absolute",
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: "#0064E0",
+    left: "50%",
+    marginLeft: -2,
+    bottom: "30%",
   },
 });
