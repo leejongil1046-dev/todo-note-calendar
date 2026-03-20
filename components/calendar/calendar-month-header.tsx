@@ -35,8 +35,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 12,
-    paddingHorizontal: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    // backgroundColor: "red",
   },
   arrowButton: {
     width: 36,

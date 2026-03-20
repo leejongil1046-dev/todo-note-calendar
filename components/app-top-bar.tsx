@@ -55,7 +55,6 @@ const styles = StyleSheet.create({
   container: {
     height: 52,
     paddingHorizontal: 16,
-    // borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomWidth: 1,
     borderBottomColor: "#DDDDDD",
     flexDirection: "row",

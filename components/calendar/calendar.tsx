@@ -5,16 +5,16 @@ import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { HolidayMap } from "@/lib/holidays-cache";
 import type { CalendarCellData, DateMeta } from "@/types/calendar-types";
 import { CalendarGrid } from "./calendar-grid";
-import { CalendarMonthHeader } from "./calendar-month-header";
-import { CalendarWeekdayHeader } from "./calendar-weekday-header";
 
 type CalendarProps = {
   currentYear: number;
   currentMonth: number;
-  onChangeYearMonth: (year: number, month: number) => void;
   selectedDate: string;
   holidayMap: HolidayMap;
   dateMetaMap: Record<string, DateMeta>;
+  onChangeYearMonth: (year: number, month: number) => void;
+  onSwipePrevMonth: () => void;
+  onSwipeNextMonth: () => void;
   onPressDate?: (
     dateString: string,
     layoutInWindow?: { x: number; y: number; width: number; height: number },
@@ -24,30 +24,14 @@ type CalendarProps = {
 export const Calendar = ({
   currentYear,
   currentMonth,
-  onChangeYearMonth,
   selectedDate,
   holidayMap,
   dateMetaMap,
+  onChangeYearMonth,
+  onSwipePrevMonth,
+  onSwipeNextMonth,
   onPressDate,
 }: CalendarProps) => {
-  const handlePressPrevMonth = () => {
-    if (currentMonth === 1) {
-      onChangeYearMonth(currentYear - 1, 12);
-      return;
-    }
-
-    onChangeYearMonth(currentYear, currentMonth - 1);
-  };
-
-  const handlePressNextMonth = () => {
-    if (currentMonth === 12) {
-      onChangeYearMonth(currentYear + 1, 1);
-      return;
-    }
-
-    onChangeYearMonth(currentYear, currentMonth + 1);
-  };
-
   const visibleSelectedDate = useMemo(() => selectedDate, [selectedDate]);
 
   const handlePressDate = (
@@ -71,9 +55,9 @@ export const Calendar = ({
     const threshold = 40;
 
     if (translationX > threshold) {
-      handlePressNextMonth();
+      onSwipeNextMonth();
     } else if (translationX < -threshold) {
-      handlePressPrevMonth();
+      onSwipePrevMonth();
     }
   };
 
@@ -88,15 +72,6 @@ export const Calendar = ({
 
   return (
     <View style={styles.container}>
-      <CalendarMonthHeader
-        year={currentYear}
-        month={currentMonth}
-        onPressPrevMonth={handlePressPrevMonth}
-        onPressNextMonth={handlePressNextMonth}
-      />
-
-      <CalendarWeekdayHeader />
-
       <GestureDetector gesture={panGesture}>
         <View>
           <CalendarGrid
@@ -116,6 +91,5 @@ export const Calendar = ({
 const styles = StyleSheet.create({
   container: {
     width: "100%",
-    marginVertical: 10,
   },
 });

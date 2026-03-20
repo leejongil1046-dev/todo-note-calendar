@@ -142,13 +142,14 @@ const styles = StyleSheet.create({
     opacity: 0.2,
   },
   dayBadge: {
-    width: 25,
-    height: 25,
+    width: 23,
+    height: 23,
     borderRadius: 5,
     alignItems: "center",
     justifyContent: "center",
-    marginTop: 3,
     paddingBottom: 0.5,
+    marginTop: 3,
+    marginBottom: 3,
   },
   dayText: {
     fontSize: 12,
@@ -162,7 +163,7 @@ const styles = StyleSheet.create({
   holidayCard: {
     width: "100%",
     alignItems: "center",
-    paddingVertical: 2,
+    paddingVertical: 1.5,
     borderRadius: 10,
     backgroundColor: "#FEECEC",
   },
@@ -174,7 +175,7 @@ const styles = StyleSheet.create({
   todoPreviewCard: {
     width: "100%",
     alignItems: "center",
-    paddingVertical: 2,
+    paddingVertical: 1.5,
     borderRadius: 10,
   },
   todoPreviewText: {
@@ -185,7 +186,7 @@ const styles = StyleSheet.create({
   moreTodoCard: {
     width: "100%",
     alignItems: "center",
-    paddingVertical: 2,
+    paddingVertical: 1.5,
     borderRadius: 10,
     backgroundColor: "#FFFFFF",
   },
