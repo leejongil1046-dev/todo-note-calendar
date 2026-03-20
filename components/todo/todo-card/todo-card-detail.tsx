@@ -2,12 +2,12 @@ import Check from "@/assets/images/check.svg";
 import type { TodoTaskItem } from "@/lib/db/todos";
 import React from "react";
 import {
-    LayoutChangeEvent,
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    Text,
-    View,
+  LayoutChangeEvent,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
 } from "react-native";
 
 type TodoCardDetailProps = {
@@ -56,9 +56,18 @@ export function TodoCardDetail({
 const styles = StyleSheet.create({
   detailContentContainer: {
     paddingHorizontal: 20,
-    paddingBottom: 16,
-    paddingTop: 2,
+    // paddingBottom: 16,
+    // paddingTop: 2,
     backgroundColor: "rgba(255,255,255,0.5)",
+    // backgroundColor: "red",
+  },
+  taskRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    minHeight: 34,
+    marginBottom: 6,
+    marginLeft: 28,
+    // backgroundColor: "blue",
   },
   todoCheckboxWrapper: {
     width: 30,
@@ -94,13 +103,6 @@ const styles = StyleSheet.create({
     marginLeft: 28,
     paddingVertical: 5,
     paddingHorizontal: 10,
-  },
-  taskRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    minHeight: 34,
-    marginBottom: 6,
-    marginLeft: 28,
   },
   taskText: {
     flex: 1,
