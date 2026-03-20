@@ -68,7 +68,7 @@ const styles = StyleSheet.create({
     width: "100%",
     height: HEADER_HEIGHT,
     paddingVertical: 15,
-    paddingHorizontal: 20,
+    paddingLeft: 20,
     justifyContent: "center",
   },
   todoHeaderRow: {
@@ -113,12 +113,14 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#6B7280",
     paddingBottom: 1,
+    marginRight: 20,
   },
   todoDeleteButton: {
     width: 30,
     height: 30,
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "flex-end",
+    justifyContent: "center",
+    marginRight: 10,
   },
 });
