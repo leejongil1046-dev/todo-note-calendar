@@ -30,8 +30,17 @@ export function TodoCardDetail({
       contentContainerStyle={styles.detailContentContainer}
     >
       <View onLayout={onLayout}>
-        {tasks.map((task) => (
-          <View key={task.id} style={styles.taskRow}>
+        {tasks.map((task, index) => (
+          <View
+            key={task.id}
+            style={[
+              styles.taskRow,
+              {
+                marginTop: index === 0 ? 6 : 0,
+                marginBottom: index === tasks.length - 1 ? 6 : 0,
+              },
+            ]}
+          >
             <Pressable
               style={styles.todoCheckboxWrapper}
               onPress={() => onPressTask(task.id)}
@@ -56,18 +65,14 @@ export function TodoCardDetail({
 const styles = StyleSheet.create({
   detailContentContainer: {
     paddingHorizontal: 20,
-    // paddingBottom: 16,
-    // paddingTop: 2,
     backgroundColor: "rgba(255,255,255,0.5)",
-    // backgroundColor: "red",
   },
   taskRow: {
     flexDirection: "row",
     alignItems: "center",
     minHeight: 34,
-    marginBottom: 6,
     marginLeft: 28,
-    // backgroundColor: "blue",
+    marginBottom: 3,
   },
   todoCheckboxWrapper: {
     width: 30,

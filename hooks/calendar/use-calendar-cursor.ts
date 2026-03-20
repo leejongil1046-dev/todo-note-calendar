@@ -1,10 +1,5 @@
 import { useCallback, useState } from "react";
 
-type CalendarCursor = {
-  year: number;
-  month: number;
-};
-
 type UseCalendarCursorParams = {
   initialYear: number;
   initialMonth: number;
