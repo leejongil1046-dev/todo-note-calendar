@@ -3,6 +3,7 @@ import { Calendar } from "@/components/calendar/calendar";
 import { CalendarMonthHeader } from "@/components/calendar/calendar-month-header";
 import { CalendarWeekdayHeader } from "@/components/calendar/calendar-weekday-header";
 import { DateDetailModal } from "@/components/date-detail-modal";
+import { useCalendarCursor } from "@/hooks/calendar/use-calendar-cursor";
 import { useCalendarSummary } from "@/hooks/calendar/use-calendar-summary";
 import { useDateDetailModal } from "@/hooks/date/use-date-detail-modal";
 import { getKoreaTodayParts } from "@/lib/date/get-korea-today-parts";
@@ -10,7 +11,7 @@ import { buildHolidayMapFromSeedYears } from "@/lib/holiday";
 import { buildHolidaySeedByYears, HolidayMap } from "@/lib/holidays-cache";
 
 import Constants from "expo-constants";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -24,12 +25,21 @@ export default function CalendarScreen() {
   const koreaToday = getKoreaTodayParts();
 
   const [selectedDate, setSelectedDate] = useState(koreaToday.dateString);
-  const [calendarYear, setCalendarYear] = useState(koreaToday.year);
-  const [calendarMonth, setCalendarMonth] = useState(koreaToday.month);
 
   const holidayMap = useMemo<HolidayMap>(() => {
     return buildHolidayMapFromSeedYears([...HOLIDAY_YEARS]);
   }, []);
+
+  const {
+    calendarYear,
+    calendarMonth,
+    handleChangeYearMonth,
+    handlePressPrevMonth,
+    handlePressNextMonth,
+  } = useCalendarCursor({
+    initialYear: koreaToday.year,
+    initialMonth: koreaToday.month,
+  });
 
   const { dateMetaMap, selectedDateMeta, handleTodoSummaryChanged } =
     useCalendarSummary({
@@ -59,33 +69,6 @@ export default function CalendarScreen() {
 
     load();
   }, []);
-
-  const handleChangeYearMonth = useCallback((year: number, month: number) => {
-    setCalendarYear(year);
-    setCalendarMonth(month);
-  }, []);
-
-  const handlePressPrevMonth = () => {
-    if (calendarMonth === 1) {
-      setCalendarYear(calendarYear - 1);
-      setCalendarMonth(12);
-      return;
-    }
-
-    setCalendarYear(calendarYear);
-    setCalendarMonth(calendarMonth - 1);
-  };
-
-  const handlePressNextMonth = () => {
-    if (calendarMonth === 12) {
-      setCalendarYear(calendarYear + 1);
-      setCalendarMonth(1);
-      return;
-    }
-
-    setCalendarYear(calendarYear);
-    setCalendarMonth(calendarMonth + 1);
-  };
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
