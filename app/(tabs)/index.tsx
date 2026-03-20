@@ -84,7 +84,7 @@ export default function CalendarScreen() {
         easing: Easing.out(Easing.ease),
         useNativeDriver: true,
       }).start();
-    }, 200);
+    }, 300);
   };
 
   const closeDetailCard = () => {
