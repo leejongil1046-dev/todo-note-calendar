@@ -1,33 +1,36 @@
-import { useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Animated, LayoutChangeEvent } from "react-native";
 
 const DETAIL_MAX_HEIGHT = 250;
 
-export function useTodoCardExpand() {
+export function useTodoCardExpand(isDragging: boolean) {
   const [expanded, setExpanded] = useState(false);
   const [measuredDetailHeight, setMeasuredDetailHeight] = useState(0);
 
   const detailHeightAnim = useRef(new Animated.Value(0)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
 
-  const animateOpen = (contentHeight: number) => {
-    const nextHeight = Math.min(contentHeight, DETAIL_MAX_HEIGHT);
+  const animateOpen = useCallback(
+    (contentHeight: number) => {
+      const nextHeight = Math.min(contentHeight, DETAIL_MAX_HEIGHT);
 
-    Animated.parallel([
-      Animated.timing(detailHeightAnim, {
-        toValue: nextHeight,
-        duration: 220,
-        useNativeDriver: false,
-      }),
-      Animated.timing(opacityAnim, {
-        toValue: 1,
-        duration: 180,
-        useNativeDriver: false,
-      }),
-    ]).start();
-  };
+      Animated.parallel([
+        Animated.timing(detailHeightAnim, {
+          toValue: nextHeight,
+          duration: 220,
+          useNativeDriver: false,
+        }),
+        Animated.timing(opacityAnim, {
+          toValue: 1,
+          duration: 180,
+          useNativeDriver: false,
+        }),
+      ]).start();
+    },
+    [detailHeightAnim, opacityAnim],
+  );
 
-  const animateClose = () => {
+  const animateClose = useCallback(() => {
     Animated.parallel([
       Animated.timing(detailHeightAnim, {
         toValue: 0,
@@ -42,9 +45,11 @@ export function useTodoCardExpand() {
     ]).start(() => {
       setExpanded(false);
     });
-  };
+  }, [detailHeightAnim, opacityAnim]);
 
   const toggleExpand = () => {
+    if (isDragging) return;
+
     if (expanded) {
       animateClose();
       return;
@@ -69,6 +74,13 @@ export function useTodoCardExpand() {
       }
     }
   };
+
+  useEffect(() => {
+    if (!isDragging) return;
+    if (!expanded) return;
+
+    animateClose();
+  }, [isDragging, expanded, animateClose]);
 
   const detailAnimatedStyle = {
     height: detailHeightAnim,

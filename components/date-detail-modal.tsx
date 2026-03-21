@@ -5,20 +5,28 @@ import { TodoCreateModal } from "@/components/todo/todo-create/todo-create-modal
 import { useTodoCreate } from "@/hooks/todo/use-todo-create";
 import { useTodoDelete } from "@/hooks/todo/use-todo-delete";
 import { db } from "@/lib/db/db";
-import { getTodosForDate, type TodoForDate } from "@/lib/db/todos";
+import {
+  getTodosForDate,
+  type TodoForDate,
+  updateTodoOrders,
+} from "@/lib/db/todos";
 import type { DateMeta, TodoSummary } from "@/types/calendar-types";
 import { Text } from "@react-navigation/elements";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Animated,
   Modal,
   Platform,
   Pressable,
-  ScrollView,
   StyleSheet,
   useWindowDimensions,
   View,
 } from "react-native";
+import DraggableFlatList, {
+  type RenderItemParams,
+  ScaleDecorator,
+} from "react-native-draggable-flatlist";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type Rect = {
@@ -108,6 +116,40 @@ export function DateDetailModal({
     refreshTodos();
   }, [visible, dateString, refreshTodos]);
 
+  const handleDragEnd = useCallback(
+    ({ data }: { data: TodoForDate[] }) => {
+      setTodos(data);
+
+      updateTodoOrders(
+        db,
+        data.map((todo) => todo.todoId),
+      );
+
+      if (dateString) {
+        onTodoSummaryChanged(dateString, buildTodoSummaryFromTodos(data));
+      }
+    },
+    [dateString, onTodoSummaryChanged],
+  );
+
+  const renderListHeader = useMemo(() => {
+    if (!meta) return null;
+
+    return (
+      <View>
+        <Text style={styles.dateText}>
+          {meta.year}년 {meta.month}월 {meta.day}일 ({meta.weekdayLabel})
+        </Text>
+
+        {meta.isHoliday && meta.holidayName && (
+          <View style={styles.holidayCard}>
+            <Text style={styles.holidayText}>{meta.holidayName}</Text>
+          </View>
+        )}
+      </View>
+    );
+  }, [meta]);
+
   if (!visible || !rect || !meta) return null;
 
   const initialTop = Platform.OS === "android" ? rect.y + topOffset : rect.y;
@@ -121,93 +163,91 @@ export function DateDetailModal({
         statusBarTranslucent
         onRequestClose={onRequestClose}
       >
-        <View style={styles.overlay} pointerEvents="box-none">
-          <Pressable style={styles.backdrop} onPress={onRequestClose} />
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <View style={styles.overlay} pointerEvents="box-none">
+            <Pressable style={styles.backdrop} onPress={onRequestClose} />
 
-          <Animated.View
-            style={[
-              styles.card,
-              {
-                left: progress.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [rect.x, screenWidth * 0.05],
-                }),
-                top: progress.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [initialTop, finalTop],
-                }),
-                width: progress.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [rect.width, screenWidth * 0.9],
-                }),
-                height: progress.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [rect.height, finalHeight],
-                }),
-                opacity: progress.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [0.8, 1],
-                }),
-                borderRadius: progress.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [9, 24],
-                }),
-              },
-            ]}
-          >
-            {isCardContentMounted && (
-              <>
-                <Animated.View
-                  style={[styles.contentWrapper, { opacity: contentOpacity }]}
-                >
-                  <Text style={styles.dateText}>
-                    {meta.year}년 {meta.month}월 {meta.day}일 (
-                    {meta.weekdayLabel})
-                  </Text>
-
-                  <ScrollView
-                    style={styles.scrollView}
-                    contentContainerStyle={styles.scrollContent}
-                    showsVerticalScrollIndicator={false}
+            <Animated.View
+              style={[
+                styles.card,
+                {
+                  left: progress.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [rect.x, screenWidth * 0.05],
+                  }),
+                  top: progress.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [initialTop, finalTop],
+                  }),
+                  width: progress.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [rect.width, screenWidth * 0.9],
+                  }),
+                  height: progress.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [rect.height, finalHeight],
+                  }),
+                  opacity: progress.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0.8, 1],
+                  }),
+                  borderRadius: progress.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [9, 24],
+                  }),
+                },
+              ]}
+            >
+              {isCardContentMounted && (
+                <>
+                  <Animated.View
+                    style={[styles.contentWrapper, { opacity: contentOpacity }]}
                   >
-                    {meta.isHoliday && meta.holidayName && (
-                      <View style={styles.holidayCard}>
-                        <Text style={styles.holidayText}>
-                          {meta.holidayName}
+                    <DraggableFlatList
+                      data={todos}
+                      keyExtractor={(item) => String(item.todoId)}
+                      onDragEnd={handleDragEnd}
+                      activationDistance={12}
+                      showsVerticalScrollIndicator={false}
+                      contentContainerStyle={styles.listContent}
+                      ListHeaderComponent={renderListHeader}
+                      ListEmptyComponent={
+                        <Text style={styles.emptyTodosText}>
+                          아직 할 일이 없어요
                         </Text>
-                      </View>
-                    )}
+                      }
+                      renderItem={({
+                        item,
+                        drag,
+                        isActive,
+                      }: RenderItemParams<TodoForDate>) => (
+                        <ScaleDecorator>
+                          <TodoCard
+                            todo={item}
+                            onRequestDelete={handleRequestDeleteTodo}
+                            onLongPressDrag={drag}
+                            isDragging={isActive}
+                          />
+                        </ScaleDecorator>
+                      )}
+                    />
+                  </Animated.View>
 
-                    {todos.length === 0 ? (
-                      <Text style={styles.emptyTodosText}>
-                        아직 할 일이 없어요
-                      </Text>
-                    ) : (
-                      todos.map((todo) => (
-                        <TodoCard
-                          key={todo.todoId}
-                          todo={todo}
-                          onRequestDelete={handleRequestDeleteTodo}
-                        />
-                      ))
-                    )}
-                  </ScrollView>
-                </Animated.View>
-
-                <Animated.View
-                  style={[styles.floatingButton, { opacity: contentOpacity }]}
-                >
-                  <Pressable
-                    style={styles.floatingButtonPressable}
-                    onPress={() => setIsCreateModalOpen(true)}
+                  <Animated.View
+                    style={[styles.floatingButton, { opacity: contentOpacity }]}
                   >
-                    <Plus width={50} height={50} />
-                  </Pressable>
-                </Animated.View>
-              </>
-            )}
-          </Animated.View>
-        </View>
+                    <Pressable
+                      style={styles.floatingButtonPressable}
+                      onPress={() => setIsCreateModalOpen(true)}
+                    >
+                      <Plus width={50} height={50} />
+                    </Pressable>
+                  </Animated.View>
+                </>
+              )}
+            </Animated.View>
+          </View>
+        </GestureHandlerRootView>
 
         <TodoCreateModal
           visible={isCreateModalOpen}
@@ -270,10 +310,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     marginLeft: 3,
   },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
+  listContent: {
     paddingBottom: 90,
   },
   holidayCard: {

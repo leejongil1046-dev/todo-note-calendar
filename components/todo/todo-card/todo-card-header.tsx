@@ -15,6 +15,8 @@ type TodoCardHeaderProps = {
   onPressCard: () => void;
   onPressToggleAll: () => void;
   onPressDelete: () => void;
+  onLongPressDrag?: () => void;
+  isDragging?: boolean;
 };
 
 export function TodoCardHeader({
@@ -27,11 +29,15 @@ export function TodoCardHeader({
   onPressCard,
   onPressToggleAll,
   onPressDelete,
+  onLongPressDrag,
+  isDragging = false,
 }: TodoCardHeaderProps) {
   return (
     <Pressable
       style={[styles.todoCard, { backgroundColor: categoryColor }]}
       onPress={onPressCard}
+      onLongPress={onLongPressDrag}
+      disabled={isDragging}
     >
       <View style={styles.todoHeaderRow}>
         <View style={styles.todoLeft}>

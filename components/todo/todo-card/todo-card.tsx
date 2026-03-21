@@ -14,13 +14,20 @@ import { TodoCardHeader } from "./todo-card-header";
 type TodoCardProps = {
   todo: TodoForDate;
   onRequestDelete: (todo: TodoForDate) => void;
+  onLongPressDrag?: () => void;
+  isDragging?: boolean;
 };
 
-export function TodoCard({ todo, onRequestDelete }: TodoCardProps) {
+export function TodoCard({
+  todo,
+  onRequestDelete,
+  onLongPressDrag,
+  isDragging = false,
+}: TodoCardProps) {
   const [tasks, setTasks] = useState(todo.tasks);
 
   const { expanded, toggleExpand, handleDetailLayout, detailAnimatedStyle } =
-    useTodoCardExpand();
+    useTodoCardExpand(isDragging);
 
   const completedCount = useMemo(() => {
     return tasks.filter((task) => task.isDone).length;
@@ -65,7 +72,13 @@ export function TodoCard({ todo, onRequestDelete }: TodoCardProps) {
   }, [todo.tasks]);
 
   return (
-    <View style={[styles.wrapper, { backgroundColor: todo.categoryColor }]}>
+    <View
+      style={[
+        styles.wrapper,
+        { backgroundColor: todo.categoryColor },
+        isDragging && styles.draggingWrapper,
+      ]}
+    >
       <TodoCardHeader
         categoryColor={todo.categoryColor}
         categoryName={todo.categoryName}
@@ -76,6 +89,8 @@ export function TodoCard({ todo, onRequestDelete }: TodoCardProps) {
         onPressCard={toggleExpand}
         onPressToggleAll={toggleAllTasks}
         onPressDelete={() => onRequestDelete(todo)}
+        onLongPressDrag={onLongPressDrag}
+        isDragging={isDragging}
       />
 
       <Animated.View
@@ -98,6 +113,9 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginVertical: 6,
     overflow: "hidden",
+  },
+  draggingWrapper: {
+    opacity: 0.96,
   },
   animatedDetailContainer: {
     overflow: "hidden",
