@@ -14,10 +14,10 @@ type TodoCardProps = {
   canMoveUp?: boolean;
   canMoveDown?: boolean;
   onRequestDelete: (todo: TodoForDate) => void;
-  onActivateMoveMode?: (todoId: number) => void;
-  onExitMoveMode?: (todoId: number) => void;
-  onPressMoveUp?: (todoId: number) => void;
-  onPressMoveDown?: (todoId: number) => void;
+  onActivateMoveMode: (todoId: number) => void;
+  onExitMoveMode: () => void;
+  onPressMoveUp: (todoId: number) => void;
+  onPressMoveDown: (todoId: number) => void;
 };
 
 export function TodoCard({
@@ -55,14 +55,13 @@ export function TodoCard({
 
   const handlePressComplete = () => {
     if (isMoveMode) {
-      onExitMoveMode?.(todo.todoId);
+      onExitMoveMode?.();
     }
   };
 
   return (
     <View style={[styles.wrapper, { backgroundColor: todo.categoryColor }]}>
       <TodoCardHeader
-        todoId={todo.todoId}
         categoryColor={todo.categoryColor}
         categoryName={todo.categoryName}
         isAllDone={isAllDone}
@@ -76,9 +75,9 @@ export function TodoCard({
         onPressCard={handlePressCard}
         onPressToggleAll={handleToggleAllTasks}
         onPressDelete={() => onRequestDelete(todo)}
-        onLongPressMove={() => onActivateMoveMode?.(todo.todoId)}
-        onPressMoveUp={onPressMoveUp}
-        onPressMoveDown={onPressMoveDown}
+        onLongPressMove={() => onActivateMoveMode(todo.todoId)}
+        onPressMoveUp={() => onPressMoveUp(todo.todoId)}
+        onPressMoveDown={() => onPressMoveDown(todo.todoId)}
         onPressComplete={handlePressComplete}
       />
 

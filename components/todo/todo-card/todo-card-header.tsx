@@ -8,7 +8,6 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 const HEADER_HEIGHT = 50;
 
 type TodoCardHeaderProps = {
-  todoId: number;
   categoryColor: string;
   categoryName: string;
   isAllDone: boolean;
@@ -22,14 +21,13 @@ type TodoCardHeaderProps = {
   onPressCard: () => void;
   onPressToggleAll: () => void;
   onPressDelete: () => void;
-  onLongPressMove?: () => void;
-  onPressMoveUp?: (todoId: number) => void;
-  onPressMoveDown?: (todoId: number) => void;
-  onPressComplete?: () => void;
+  onLongPressMove: () => void;
+  onPressMoveUp: () => void;
+  onPressMoveDown: () => void;
+  onPressComplete: () => void;
 };
 
 export function TodoCardHeader({
-  todoId,
   categoryColor,
   categoryName,
   isAllDone,
@@ -79,7 +77,7 @@ export function TodoCardHeader({
                 styles.moveButton,
                 !canMoveUp && styles.moveButtonDisabled,
               ]}
-              onPress={() => onPressMoveUp?.(todoId)}
+              onPress={onPressMoveUp}
               disabled={!canMoveUp}
             >
               <ChevronUp width={18} height={18} />
@@ -90,7 +88,7 @@ export function TodoCardHeader({
                 styles.moveButton,
                 !canMoveDown && styles.moveButtonDisabled,
               ]}
-              onPress={() => onPressMoveDown?.(todoId)}
+              onPress={onPressMoveDown}
               disabled={!canMoveDown}
             >
               <ChevronDown width={18} height={18} />
