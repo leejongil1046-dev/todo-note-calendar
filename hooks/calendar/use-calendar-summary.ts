@@ -11,6 +11,21 @@ import type {
     TodoSummaryByDate,
 } from "@/types/calendar-types";
 
+const EMPTY_TODO_SUMMARY_BY_DATE: TodoSummaryByDate = {};
+
+function buildMonthKey(year: number, month: number): string {
+  return `${year}-${String(month).padStart(2, "0")}`;
+}
+
+function monthKeyFromDateString(dateString: string): string | null {
+  const parts = dateString.split("-");
+  if (parts.length < 2) return null;
+  const y = Number(parts[0]);
+  const m = Number(parts[1]);
+  if (!Number.isFinite(y) || !Number.isFinite(m)) return null;
+  return buildMonthKey(y, m);
+}
+
 type UseCalendarSummaryParams = {
   calendarYear: number;
   calendarMonth: number;
@@ -19,7 +34,6 @@ type UseCalendarSummaryParams = {
 };
 
 type UseCalendarSummaryResult = {
-  todoSummaryByDate: TodoSummaryByDate;
   dateMetaMap: Record<string, DateMeta>;
   selectedDateMeta: DateMeta | null;
   handleTodoSummaryChanged: (dateString: string, summary: TodoSummary) => void;
@@ -47,18 +61,38 @@ export function useCalendarSummary({
     [],
   );
 
-  const [todoSummaryByDate, setTodoSummaryByDate] = useState<TodoSummaryByDate>(
-    () => {
-      return readTodoSummaryByMonth(calendarYear, calendarMonth);
-    },
+  const [monthlyTodoSummaryByDate, setMonthlyTodoSummaryByDate] = useState<
+    Record<string, TodoSummaryByDate>
+  >(() => {
+    const key = buildMonthKey(calendarYear, calendarMonth);
+    return { [key]: readTodoSummaryByMonth(calendarYear, calendarMonth) };
+  });
+
+  const currentMonthKey = useMemo(
+    () => buildMonthKey(calendarYear, calendarMonth),
+    [calendarYear, calendarMonth],
   );
+
+  const todoSummaryByDate =
+    monthlyTodoSummaryByDate[currentMonthKey] ?? EMPTY_TODO_SUMMARY_BY_DATE;
 
   const handleTodoSummaryChanged = useCallback(
     (dateString: string, summary: TodoSummary) => {
-      setTodoSummaryByDate((prev) => ({
-        ...prev,
-        [dateString]: summary,
-      }));
+      const key = monthKeyFromDateString(dateString);
+      if (!key) return;
+
+      setMonthlyTodoSummaryByDate((prev) => {
+        const existing = prev[key];
+        if (!existing) return prev;
+
+        return {
+          ...prev,
+          [key]: {
+            ...existing,
+            [dateString]: summary,
+          },
+        };
+      });
     },
     [],
   );
@@ -68,7 +102,14 @@ export function useCalendarSummary({
   }, [calendarYear, calendarMonth, selectedDate]);
 
   useEffect(() => {
-    setTodoSummaryByDate(readTodoSummaryByMonth(calendarYear, calendarMonth));
+    const key = buildMonthKey(calendarYear, calendarMonth);
+    setMonthlyTodoSummaryByDate((prev) => {
+      if (prev[key]) return prev;
+      return {
+        ...prev,
+        [key]: readTodoSummaryByMonth(calendarYear, calendarMonth),
+      };
+    });
   }, [calendarYear, calendarMonth, readTodoSummaryByMonth]);
 
   const dateMetaMap = useMemo(() => {
@@ -77,8 +118,11 @@ export function useCalendarSummary({
 
   const selectedDateMeta = dateMetaMap[selectedDate] ?? null;
 
+  //   console.log(JSON.stringify(todoSummaryByDate, null, 2));
+  //   console.log(todoSummaryByDate);
+  console.log(monthlyTodoSummaryByDate);
+
   return {
-    todoSummaryByDate,
     dateMetaMap,
     selectedDateMeta,
     handleTodoSummaryChanged,
