@@ -1,96 +1,85 @@
-import { db } from "@/lib/db/db";
-import {
-  updateAllTodoTasksDone,
-  updateTodoTaskDone,
-  type TodoForDate,
-} from "@/lib/db/todos";
-import React, { useEffect, useMemo, useState } from "react";
+import { type TodoForDate } from "@/lib/db/todos";
+import React from "react";
 import { Animated, StyleSheet, View } from "react-native";
 
 import { useTodoCardExpand } from "@/hooks/todo/use-todo-card-expand";
+import { useTodoCardTasks } from "@/hooks/todo/use-todo-card-tasks";
 import { TodoCardDetail } from "./todo-card-detail";
 import { TodoCardHeader } from "./todo-card-header";
 
 type TodoCardProps = {
   todo: TodoForDate;
+  isMovingTodo?: boolean;
+  isMoveMode?: boolean;
+  canMoveUp?: boolean;
+  canMoveDown?: boolean;
   onRequestDelete: (todo: TodoForDate) => void;
-  onLongPressDrag?: () => void;
-  isDragging?: boolean;
+  onActivateMoveMode?: (todoId: number) => void;
+  onExitMoveMode?: (todoId: number) => void;
+  onPressMoveUp?: (todoId: number) => void;
+  onPressMoveDown?: (todoId: number) => void;
 };
 
 export function TodoCard({
   todo,
+  isMovingTodo = false,
+  isMoveMode = false,
+  canMoveUp = false,
+  canMoveDown = false,
   onRequestDelete,
-  onLongPressDrag,
-  isDragging = false,
+  onActivateMoveMode,
+  onExitMoveMode,
+  onPressMoveUp,
+  onPressMoveDown,
 }: TodoCardProps) {
-  const [tasks, setTasks] = useState(todo.tasks);
-
   const { expanded, toggleExpand, handleDetailLayout, detailAnimatedStyle } =
-    useTodoCardExpand(isDragging);
+    useTodoCardExpand(isMoveMode);
 
-  const completedCount = useMemo(() => {
-    return tasks.filter((task) => task.isDone).length;
-  }, [tasks]);
+  const {
+    tasks,
+    completedCount,
+    totalCount,
+    isAllDone,
+    handleToggleAllTasks,
+    handleToggleTask,
+  } = useTodoCardTasks({
+    todoId: todo.todoId,
+    initialTasks: todo.tasks,
+    isMoveMode,
+  });
 
-  const totalCount = tasks.length;
-
-  const isAllDone = useMemo(() => {
-    return totalCount > 0 && completedCount === totalCount;
-  }, [completedCount, totalCount]);
-
-  const toggleAllTasks = () => {
-    const nextDone = !isAllDone;
-
-    setTasks((prev) =>
-      prev.map((task) => ({
-        ...task,
-        isDone: nextDone,
-      })),
-    );
-
-    updateAllTodoTasksDone(db, todo.todoId, nextDone);
+  const handlePressCard = () => {
+    if (isMoveMode) return;
+    toggleExpand();
   };
 
-  const toggleTask = (taskId: number) => {
-    const targetTask = tasks.find((task) => task.id === taskId);
-    if (!targetTask) return;
-
-    const nextDone = !targetTask.isDone;
-
-    setTasks((prev) =>
-      prev.map((task) =>
-        task.id === taskId ? { ...task, isDone: nextDone } : task,
-      ),
-    );
-
-    updateTodoTaskDone(db, todo.todoId, taskId, nextDone);
+  const handlePressComplete = () => {
+    if (isMoveMode) {
+      onExitMoveMode?.(todo.todoId);
+    }
   };
-
-  useEffect(() => {
-    setTasks(todo.tasks);
-  }, [todo.tasks]);
 
   return (
-    <View
-      style={[
-        styles.wrapper,
-        { backgroundColor: todo.categoryColor },
-        isDragging && styles.draggingWrapper,
-      ]}
-    >
+    <View style={[styles.wrapper, { backgroundColor: todo.categoryColor }]}>
       <TodoCardHeader
+        todoId={todo.todoId}
         categoryColor={todo.categoryColor}
         categoryName={todo.categoryName}
         isAllDone={isAllDone}
         completedCount={completedCount}
         totalCount={totalCount}
         expanded={expanded}
-        onPressCard={toggleExpand}
-        onPressToggleAll={toggleAllTasks}
+        isMovingTodo={isMovingTodo}
+        isMoveMode={isMoveMode}
+        canMoveUp={canMoveUp}
+        canMoveDown={canMoveDown}
+        onPressCard={handlePressCard}
+        onPressToggleAll={handleToggleAllTasks}
         onPressDelete={() => onRequestDelete(todo)}
-        onLongPressDrag={onLongPressDrag}
-        isDragging={isDragging}
+        onLongPressMove={() => onActivateMoveMode?.(todo.todoId)}
+        onPressMoveUp={onPressMoveUp}
+        onPressMoveDown={onPressMoveDown}
+        onPressComplete={handlePressComplete}
       />
 
       <Animated.View
@@ -100,7 +89,7 @@ export function TodoCard({
           tasks={tasks}
           content={todo.content}
           onLayout={handleDetailLayout}
-          onPressTask={toggleTask}
+          onPressTask={handleToggleTask}
         />
       </Animated.View>
     </View>
@@ -113,9 +102,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginVertical: 6,
     overflow: "hidden",
-  },
-  draggingWrapper: {
-    opacity: 0.96,
   },
   animatedDetailContainer: {
     overflow: "hidden",

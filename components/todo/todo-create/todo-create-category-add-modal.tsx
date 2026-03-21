@@ -58,6 +58,7 @@ export function TodoCreateCategoryAddModal({
       visible={visible}
       transparent
       animationType="fade"
+      statusBarTranslucent
       onRequestClose={handleClose}
     >
       <Pressable style={styles.overlay} onPress={handleClose}>

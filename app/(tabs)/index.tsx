@@ -70,6 +70,14 @@ export default function CalendarScreen() {
     load();
   }, []);
 
+  // const columns = db.getAllSync<{ name: string }>("PRAGMA table_info(todos)");
+  // console.log("todos columns:", columns);
+
+  // const schema = db.getAllSync<{ sql: string }>(
+  //   "SELECT sql FROM sqlite_master WHERE type='table' AND name='todos'",
+  // );
+  // console.log("todos schema:", schema);
+
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <AppTopBar

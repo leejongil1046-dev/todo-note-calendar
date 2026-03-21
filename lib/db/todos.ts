@@ -291,6 +291,33 @@ export function updateTodoOrders(db: SQLiteDatabase, orderedTodoIds: number[]) {
   }
 }
 
+export async function updateTodoOrdersAsync(
+  db: SQLiteDatabase,
+  orderedTodoIds: number[],
+) {
+  const now = Date.now();
+
+  await db.execAsync("BEGIN");
+
+  try {
+    for (const [index, todoId] of orderedTodoIds.entries()) {
+      await db.runAsync(
+        `
+          UPDATE todos
+          SET sort_order = ?, updated_at = ?
+          WHERE id = ?
+        `,
+        [index, now, todoId],
+      );
+    }
+
+    await db.execAsync("COMMIT");
+  } catch (error) {
+    await db.execAsync("ROLLBACK");
+    throw error;
+  }
+}
+
 export function deleteTodo(db: SQLiteDatabase, todoId: number) {
   const result = db.runSync(
     `

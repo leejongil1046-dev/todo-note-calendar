@@ -3,7 +3,7 @@ import { Animated, LayoutChangeEvent } from "react-native";
 
 const DETAIL_MAX_HEIGHT = 250;
 
-export function useTodoCardExpand(isDragging: boolean) {
+export function useTodoCardExpand(isAnyMoveModeActive: boolean) {
   const [expanded, setExpanded] = useState(false);
   const [measuredDetailHeight, setMeasuredDetailHeight] = useState(0);
 
@@ -48,7 +48,7 @@ export function useTodoCardExpand(isDragging: boolean) {
   }, [detailHeightAnim, opacityAnim]);
 
   const toggleExpand = () => {
-    if (isDragging) return;
+    if (isAnyMoveModeActive) return;
 
     if (expanded) {
       animateClose();
@@ -76,11 +76,11 @@ export function useTodoCardExpand(isDragging: boolean) {
   };
 
   useEffect(() => {
-    if (!isDragging) return;
+    if (!isAnyMoveModeActive) return;
     if (!expanded) return;
 
     animateClose();
-  }, [isDragging, expanded, animateClose]);
+  }, [isAnyMoveModeActive, expanded, animateClose]);
 
   const detailAnimatedStyle = {
     height: detailHeightAnim,
