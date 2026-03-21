@@ -2,7 +2,7 @@ import { useCallback, useMemo, useRef, useState } from "react";
 import { Animated } from "react-native";
 
 const FAB_SIZE = 50;
-const GAP = 12;
+const GAP = 15;
 /** 접힘: 아래 chevron이 메인 FAB와 겹치도록 내릴 양 */
 const DOWN_STACK_OFFSET = FAB_SIZE + GAP;
 /** 접힘: 위 chevron이 메인 FAB와 겹치도록 내릴 양 */
