@@ -3,15 +3,11 @@ import type { SQLiteDatabase } from "expo-sqlite";
 import { TodoSummary } from "@/types/calendar-types";
 import type { TodoCategory } from "@/types/todo-types";
 
-export type RepeatType = "daily" | "weekday" | "weekend";
-
 export type CreateTodoPayload = {
   category: TodoCategory;
   tasks: string[];
   content: string;
-  startDate: string; // YYYY-MM-DD
-  endDate: string; // YYYY-MM-DD
-  repeatType: RepeatType | null;
+  date: string; // YYYY-MM-DD
 };
 
 export type TodoTaskItem = {
@@ -26,7 +22,22 @@ export type TodoForDate = {
   categoryName: string;
   categoryColor: string;
   content: string | null;
+  date: string;
+  sortOrder: number;
   tasks: TodoTaskItem[];
+};
+
+const getNextTodoSortOrder = (db: SQLiteDatabase, dateString: string) => {
+  const row = db.getFirstSync<{ maxSortOrder: number | null }>(
+    `
+      SELECT MAX(sort_order) AS maxSortOrder
+      FROM todos
+      WHERE date = ?
+    `,
+    [dateString],
+  );
+
+  return (row?.maxSortOrder ?? -1) + 1;
 };
 
 export function createTodoWithTasks(
@@ -38,8 +49,9 @@ export function createTodoWithTasks(
   const contentValue =
     payload.content.trim().length > 0 ? payload.content.trim() : null;
 
-  const repeatTypeValue =
-    payload.startDate === payload.endDate ? null : payload.repeatType;
+  const trimmedTasks = payload.tasks
+    .map((title) => title.trim())
+    .filter((title) => title.length > 0);
 
   db.runSync(
     `
@@ -52,35 +64,25 @@ export function createTodoWithTasks(
     [payload.category.id, payload.category.name, payload.category.color, now],
   );
 
+  const nextSortOrder = getNextTodoSortOrder(db, payload.date);
+
   const todoResult = db.runSync(
     `
       INSERT INTO todos (
         category_id,
         content,
-        start_date,
-        end_date,
-        repeat_type,
+        date,
+        sort_order,
         created_at,
         updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?)
     `,
-    [
-      payload.category.id,
-      contentValue,
-      payload.startDate,
-      payload.endDate,
-      repeatTypeValue,
-      now,
-      now,
-    ],
+    [payload.category.id, contentValue, payload.date, nextSortOrder, now, now],
   );
 
   const todoId = Number(todoResult.lastInsertRowId);
 
-  payload.tasks.forEach((title, index) => {
-    const trimmed = title.trim();
-    if (!trimmed) return;
-
+  trimmedTasks.forEach((title, index) => {
     db.runSync(
       `
         INSERT INTO todo_tasks (
@@ -92,7 +94,7 @@ export function createTodoWithTasks(
           updated_at
         ) VALUES (?, ?, 0, ?, ?, ?)
       `,
-      [todoId, trimmed, index, now, now],
+      [todoId, title, index, now, now],
     );
   });
 
@@ -108,33 +110,39 @@ export function getTodosForDate(
     categoryName: string;
     categoryColor: string;
     content: string | null;
+    date: string;
+    todoSortOrder: number;
     taskId: number | null;
     taskTitle: string | null;
     taskIsDone: number | null;
     taskSortOrder: number | null;
-    updatedAt: number;
-    createdAt: number;
   }>(
     `
-        SELECT
-          t.id AS todoId,
-          c.name AS categoryName,
-          c.color AS categoryColor,
-          t.content AS content,
-          tt.id AS taskId,
-          tt.title AS taskTitle,
-          tt.is_done AS taskIsDone,
-          tt.sort_order AS taskSortOrder,
-          t.created_at AS createdAt,
-          t.updated_at AS updatedAt
-        FROM todos t
-        JOIN todo_categories c ON c.id = t.category_id
-        LEFT JOIN todo_tasks tt ON tt.todo_id = t.id
-        WHERE t.start_date <= ?
-          AND t.end_date >= ?
-        ORDER BY t.created_at ASC, tt.sort_order ASC
-      `,
-    [dateString, dateString],
+      SELECT
+        t.id AS todoId,
+        c.name AS categoryName,
+        c.color AS categoryColor,
+        t.content AS content,
+        t.date AS date,
+        t.sort_order AS todoSortOrder,
+        tt.id AS taskId,
+        tt.title AS taskTitle,
+        tt.is_done AS taskIsDone,
+        tt.sort_order AS taskSortOrder
+      FROM todos t
+      JOIN todo_categories c
+        ON c.id = t.category_id
+      LEFT JOIN todo_tasks tt
+        ON tt.todo_id = t.id
+      WHERE t.date = ?
+      ORDER BY
+        t.sort_order ASC,
+        t.created_at ASC,
+        t.id ASC,
+        tt.sort_order ASC,
+        tt.id ASC
+    `,
+    [dateString],
   );
 
   const todoMap = new Map<number, TodoForDate>();
@@ -146,6 +154,8 @@ export function getTodosForDate(
         categoryName: row.categoryName,
         categoryColor: row.categoryColor,
         content: row.content,
+        date: row.date,
+        sortOrder: row.todoSortOrder,
         tasks: [],
       });
     }
@@ -186,11 +196,13 @@ export function getTodoSummaryForDate(
       FROM todos t
       JOIN todo_categories c
         ON c.id = t.category_id
-      WHERE t.start_date <= ?
-        AND t.end_date >= ?
-      ORDER BY t.created_at ASC
+      WHERE t.date = ?
+      ORDER BY
+        t.sort_order ASC,
+        t.created_at ASC,
+        t.id ASC
     `,
-    [dateString, dateString],
+    [dateString],
   );
 
   return {
@@ -212,19 +224,19 @@ export function updateTodoTaskDone(
 
   db.runSync(
     `
-        UPDATE todo_tasks
-        SET is_done = ?, updated_at = ?
-        WHERE id = ?
-      `,
+      UPDATE todo_tasks
+      SET is_done = ?, updated_at = ?
+      WHERE id = ?
+    `,
     [isDone ? 1 : 0, now, taskId],
   );
 
   db.runSync(
     `
-        UPDATE todos
-        SET updated_at = ?
-        WHERE id = ?
-      `,
+      UPDATE todos
+      SET updated_at = ?
+      WHERE id = ?
+    `,
     [now, todoId],
   );
 }
@@ -255,12 +267,36 @@ export function updateAllTodoTasksDone(
   );
 }
 
+export function updateTodoOrders(db: SQLiteDatabase, orderedTodoIds: number[]) {
+  const now = Date.now();
+
+  db.execSync("BEGIN");
+
+  try {
+    orderedTodoIds.forEach((todoId, index) => {
+      db.runSync(
+        `
+          UPDATE todos
+          SET sort_order = ?, updated_at = ?
+          WHERE id = ?
+        `,
+        [index, now, todoId],
+      );
+    });
+
+    db.execSync("COMMIT");
+  } catch (error) {
+    db.execSync("ROLLBACK");
+    throw error;
+  }
+}
+
 export function deleteTodo(db: SQLiteDatabase, todoId: number) {
   const result = db.runSync(
     `
-        DELETE FROM todos
-        WHERE id = ?
-      `,
+      DELETE FROM todos
+      WHERE id = ?
+    `,
     [todoId],
   );
 

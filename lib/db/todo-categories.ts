@@ -11,7 +11,6 @@ export const DEFAULT_CATEGORIES: TodoCategory[] = [
 export function seedDefaultCategories(db: SQLiteDatabase) {
   const now = Date.now();
   for (const category of DEFAULT_CATEGORIES) {
-    // 기본 카테고리는 이미 있으면 그대로 둔다.
     db.runSync(
       `
         INSERT INTO todo_categories (id, name, color, created_at)
@@ -34,8 +33,6 @@ export function getTodoCategories(db: SQLiteDatabase): TodoCategory[] {
 export function upsertTodoCategory(db: SQLiteDatabase, category: TodoCategory) {
   const now = Date.now();
 
-  // name/color만 업데이트하고, created_at은 “대체로” 유지하고 싶다면
-  // 아래에서 created_at 업데이트를 빼면 됩니다(지금은 간단하게 갱신).
   db.runSync(
     `
       INSERT INTO todo_categories (id, name, color, created_at)

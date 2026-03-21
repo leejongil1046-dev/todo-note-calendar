@@ -15,9 +15,8 @@ export function runMigrations(db: SQLiteDatabase) {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       category_id TEXT NOT NULL,
       content TEXT,
-      start_date TEXT NOT NULL,
-      end_date TEXT NOT NULL,
-      repeat_type TEXT,
+      date TEXT NOT NULL,
+      sort_order INTEGER NOT NULL,
       created_at INTEGER NOT NULL,
       updated_at INTEGER NOT NULL,
       FOREIGN KEY (category_id) REFERENCES todo_categories(id)

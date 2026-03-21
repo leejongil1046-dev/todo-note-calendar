@@ -92,7 +92,7 @@ export const CalendarCell = ({
 
       <View style={styles.todoContainer}>
         {holiday && (
-          <View style={styles.holidayCard}>
+          <View style={[styles.todoRow, styles.holidayCard]}>
             <Text style={styles.holidayLabel} numberOfLines={1}>
               {holiday.name}
             </Text>
@@ -101,10 +101,7 @@ export const CalendarCell = ({
 
         {visiblePreviews.map((preview, index) => (
           <View
-            style={[
-              styles.todoPreviewCard,
-              { backgroundColor: preview.categoryColor },
-            ]}
+            style={[styles.todoRow, { backgroundColor: preview.categoryColor }]}
             key={`${preview.categoryName}-${preview.categoryColor}-${index}`}
           >
             <Text style={styles.todoPreviewText} numberOfLines={1}>
@@ -114,7 +111,7 @@ export const CalendarCell = ({
         ))}
 
         {extraTodoCount > 0 && (
-          <View style={styles.moreTodoCard}>
+          <View style={[styles.todoRow, styles.moreTodoCard]}>
             <Text style={styles.moreTodoText}>외 {extraTodoCount}개</Text>
           </View>
         )}
@@ -131,7 +128,7 @@ const styles = StyleSheet.create({
     justifyContent: "flex-start",
     borderWidth: 1.5,
     borderRadius: 9,
-    borderColor: "rgba(0,0,0,0)",
+    borderColor: "transparent",
   },
   isSelectedCell: {
     borderWidth: 1.5,
@@ -142,8 +139,8 @@ const styles = StyleSheet.create({
     opacity: 0.2,
   },
   dayBadge: {
-    width: 23,
-    height: 23,
+    width: 20,
+    height: 20,
     borderRadius: 5,
     alignItems: "center",
     justifyContent: "center",
@@ -158,13 +155,15 @@ const styles = StyleSheet.create({
   todoContainer: {
     width: "100%",
     alignItems: "center",
-    gap: 2,
+    gap: 3,
   },
-  holidayCard: {
+  todoRow: {
     width: "100%",
     alignItems: "center",
     paddingVertical: 1.5,
-    borderRadius: 10,
+    borderRadius: 5,
+  },
+  holidayCard: {
     backgroundColor: "#FEECEC",
   },
   holidayLabel: {
@@ -172,21 +171,12 @@ const styles = StyleSheet.create({
     fontWeight: "400",
     color: "#DC2626",
   },
-  todoPreviewCard: {
-    width: "100%",
-    alignItems: "center",
-    paddingVertical: 1.5,
-    borderRadius: 10,
-  },
   todoPreviewText: {
     fontSize: 9,
     fontWeight: "400",
     color: "#000000",
   },
   moreTodoCard: {
-    width: "100%",
-    alignItems: "center",
-    paddingVertical: 1.5,
     borderRadius: 10,
     backgroundColor: "#FFFFFF",
   },

@@ -4,7 +4,7 @@ import { seedDefaultCategories } from "./todo-categories";
 
 export const db = SQLite.openDatabaseSync("app.db");
 
-const SHOULD_RESET_DB = false;
+const SHOULD_RESET_DB = true;
 
 export function initDb() {
   db.execSync("PRAGMA foreign_keys = ON;");

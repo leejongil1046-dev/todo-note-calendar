@@ -118,10 +118,6 @@ export function useCalendarSummary({
 
   const selectedDateMeta = dateMetaMap[selectedDate] ?? null;
 
-  //   console.log(JSON.stringify(todoSummaryByDate, null, 2));
-  //   console.log(todoSummaryByDate);
-  console.log(monthlyTodoSummaryByDate);
-
   return {
     dateMetaMap,
     selectedDateMeta,
