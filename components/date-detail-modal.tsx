@@ -237,17 +237,20 @@ export function DateDetailModal({
       {
         label: "순서 변경",
         onPress: () => openListMenuMode("reorder"),
+        disabled: todos.length <= 1,
       },
       {
         label: "수정",
         onPress: () => openListMenuMode("edit"),
+        disabled: todos.length === 0,
       },
       {
         label: "삭제",
         onPress: () => openListMenuMode("delete"),
+        disabled: todos.length === 0,
       },
     ],
-    [openListMenuMode],
+    [openListMenuMode, todos.length],
   );
 
   const handleFabPress = useCallback(() => {

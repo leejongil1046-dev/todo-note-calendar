@@ -7,6 +7,8 @@ import { Pressable, StyleSheet, View } from "react-native";
 export type DateDetailHeaderMenuItem = {
   label: string;
   onPress: () => void;
+  /** true면 행 탭 불가(스타일만 흐리게) */
+  disabled?: boolean;
 };
 
 export const DEFAULT_DATE_DETAIL_HEADER_MENU_ITEMS: DateDetailHeaderMenuItem[] =
@@ -72,17 +74,28 @@ export function DateDetailModalListHeader({
               {menuItems.map((item, index) => (
                 <Pressable
                   key={`${item.label}-${index}`}
+                  disabled={item.disabled}
                   style={({ pressed }) => [
                     styles.dropdownRow,
                     index < menuItems.length - 1 && styles.dropdownRowBorder,
-                    pressed && styles.dropdownRowPressed,
+                    pressed && !item.disabled && styles.dropdownRowPressed,
+                    item.disabled && styles.dropdownRowDisabled,
                   ]}
                   onPress={() => {
+                    if (item.disabled) return;
                     item.onPress();
                     onMenuOpenChange(false);
                   }}
+                  accessibilityState={{ disabled: !!item.disabled }}
                 >
-                  <Text style={styles.dropdownRowText}>{item.label}</Text>
+                  <Text
+                    style={[
+                      styles.dropdownRowText,
+                      item.disabled && styles.dropdownRowTextDisabled,
+                    ]}
+                  >
+                    {item.label}
+                  </Text>
                 </Pressable>
               ))}
             </View>
@@ -161,6 +174,12 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "500",
     color: "#111827",
+  },
+  dropdownRowDisabled: {
+    opacity: 0.45,
+  },
+  dropdownRowTextDisabled: {
+    color: "#9CA3AF",
   },
   holidayCard: {
     width: "100%",

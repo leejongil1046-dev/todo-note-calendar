@@ -61,7 +61,7 @@ export function useDateDetailFabCluster() {
 
   /** 순서 변경: chevron 마운트 후 회전 + 펼침 동시 실행 */
   const enterReorderMode = useCallback(() => {
-    setIsFabClusterAnimating(true);
+    // setIsFabClusterAnimating(true);
     setReorderChevronsMounted(true);
     reorderSpread.setValue(0);
     requestAnimationFrame(() => {
@@ -78,7 +78,7 @@ export function useDateDetailFabCluster() {
           useNativeDriver: true,
         }),
       ]).start(() => {
-        setIsFabClusterAnimating(false);
+        // setIsFabClusterAnimating(false);
       });
     });
   }, [fabRotation, reorderSpread]);
@@ -133,7 +133,7 @@ export function useDateDetailFabCluster() {
 
   /** 수정·삭제: 서브 FAB 마운트 후 회전 + 슬라이드 동시 */
   const enterActionSubFabMode = useCallback(() => {
-    setIsFabClusterAnimating(true);
+    // setIsFabClusterAnimating(true);
     setActionSubFabMounted(true);
     actionSpread.setValue(0);
     requestAnimationFrame(() => {
@@ -150,7 +150,7 @@ export function useDateDetailFabCluster() {
           useNativeDriver: true,
         }),
       ]).start(() => {
-        setIsFabClusterAnimating(false);
+        // setIsFabClusterAnimating(false);
       });
     });
   }, [actionSpread, fabRotation]);
