@@ -104,6 +104,8 @@ export function DateDetailModal({
     upTranslateY,
     downTranslateY,
     actionTranslateY,
+    reorderChevronsOpacity,
+    actionSubFabOpacity,
     reorderChevronsMounted,
     actionSubFabMounted,
     enterReorderMode,
@@ -451,7 +453,10 @@ export function DateDetailModal({
                         styles.subFabSpacing,
                         reorderChevronMoveDisabled.down &&
                           styles.reorderSubFabDisabled,
-                        { transform: [{ translateY: downTranslateY }] },
+                        {
+                          opacity: reorderChevronsOpacity,
+                          transform: [{ translateY: downTranslateY }],
+                        },
                       ]}
                     >
                       <Pressable
@@ -483,7 +488,10 @@ export function DateDetailModal({
                         styles.subFabSpacing,
                         reorderChevronMoveDisabled.up &&
                           styles.reorderSubFabDisabled,
-                        { transform: [{ translateY: upTranslateY }] },
+                        {
+                          opacity: reorderChevronsOpacity,
+                          transform: [{ translateY: upTranslateY }],
+                        },
                       ]}
                     >
                       <Pressable
@@ -513,7 +521,10 @@ export function DateDetailModal({
                       style={[
                         styles.subFab,
                         styles.subFabSpacing,
-                        { transform: [{ translateY: actionTranslateY }] },
+                        {
+                          opacity: actionSubFabOpacity,
+                          transform: [{ translateY: actionTranslateY }],
+                        },
                       ]}
                     >
                       <Pressable
@@ -532,7 +543,10 @@ export function DateDetailModal({
                       style={[
                         styles.subFab,
                         styles.subFabSpacing,
-                        { transform: [{ translateY: actionTranslateY }] },
+                        {
+                          opacity: actionSubFabOpacity,
+                          transform: [{ translateY: actionTranslateY }],
+                        },
                       ]}
                     >
                       <Pressable
@@ -639,7 +653,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.2,
     shadowRadius: 10,
-    elevation: 10,
+    elevation: 5,
   },
   subFab: {
     width: 50,
