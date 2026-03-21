@@ -100,7 +100,7 @@ export function useDateDetailFabCluster() {
       Animated.parallel([
         Animated.timing(reorderSpread, {
           toValue: 0,
-          duration: 300,
+          duration: 350,
           useNativeDriver: true,
         }),
         Animated.spring(fabRotation, {
@@ -111,7 +111,7 @@ export function useDateDetailFabCluster() {
         }),
         Animated.timing(reorderChevronsOpacity, {
           toValue: 0,
-          duration: 300,
+          duration: 350,
           useNativeDriver: true,
         }),
       ]).start(({ finished }) => {
@@ -193,7 +193,7 @@ export function useDateDetailFabCluster() {
       Animated.parallel([
         Animated.timing(actionSpread, {
           toValue: 0,
-          duration: 300,
+          duration: 350,
           useNativeDriver: true,
         }),
         Animated.spring(fabRotation, {
@@ -204,7 +204,7 @@ export function useDateDetailFabCluster() {
         }),
         Animated.timing(actionSubFabOpacity, {
           toValue: 0,
-          duration: 300,
+          duration: 350,
           useNativeDriver: true,
         }),
       ]).start(({ finished }) => {
