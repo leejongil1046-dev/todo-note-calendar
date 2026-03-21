@@ -34,9 +34,7 @@ type TodoCreateModalProps = {
     category: TodoCategory;
     tasks: string[];
     content: string;
-    startDate: string;
-    endDate: string;
-    repeatType: RepeatType | null;
+    date: string;
   }) => void;
 };
 
@@ -119,9 +117,7 @@ export function TodoCreateModal({
       category: selectedCategory,
       tasks,
       content: content.trim(),
-      startDate,
-      endDate,
-      repeatType: null,
+      date: startDate,
     });
 
     resetForm();

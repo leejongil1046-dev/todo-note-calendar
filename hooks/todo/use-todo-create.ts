@@ -1,4 +1,3 @@
-import type { RepeatType } from "@/components/todo/todo-create/todo-create-date-section";
 import { db } from "@/lib/db/db";
 import { createTodoWithTasks } from "@/lib/db/todos";
 import type { TodoCategory } from "@/types/todo-types";
@@ -10,9 +9,7 @@ type CreateTodoPayload = {
   category: TodoCategory;
   tasks: string[];
   content: string;
-  startDate: string;
-  endDate: string;
-  repeatType: RepeatType | null;
+  date: string;
 };
 
 type UseTodoCreateParams = {
