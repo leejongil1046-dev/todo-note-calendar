@@ -10,7 +10,7 @@ type TodoCardHeaderProps = {
   isAllDone: boolean;
   completedCount: number;
   totalCount: number;
-  isListMenuModeActive?: boolean;
+  interactionLocked?: boolean;
   onPressCard: () => void;
   onPressToggleAll: () => void;
 };
@@ -21,7 +21,7 @@ export function TodoCardHeader({
   isAllDone,
   completedCount,
   totalCount,
-  isListMenuModeActive = false,
+  interactionLocked = false,
   onPressCard,
   onPressToggleAll,
 }: TodoCardHeaderProps) {
@@ -35,7 +35,7 @@ export function TodoCardHeader({
           <Pressable
             style={styles.todoCheckboxWrapper}
             onPress={onPressToggleAll}
-            disabled={isListMenuModeActive}
+            disabled={interactionLocked}
           >
             <View style={styles.todoCheckbox}>
               {isAllDone && <Check width={19} height={19} />}

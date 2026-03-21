@@ -43,7 +43,7 @@ export function TodoCard({
   } = useTodoCardTasks({
     todoId: todo.todoId,
     initialTasks: todo.tasks,
-    isListMenuModeActive: interactionLocked,
+    interactionLocked: interactionLocked,
   });
 
   const handlePressCard = () => {
@@ -74,7 +74,7 @@ export function TodoCard({
         isAllDone={isAllDone}
         completedCount={completedCount}
         totalCount={totalCount}
-        isListMenuModeActive={interactionLocked}
+        interactionLocked={interactionLocked}
         onPressCard={handlePressCard}
         onPressToggleAll={handleToggleAllTasks}
       />

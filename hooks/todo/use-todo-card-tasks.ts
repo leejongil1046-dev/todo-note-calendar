@@ -7,13 +7,13 @@ import { updateAllTodoTasksDone, updateTodoTaskDone } from "@/lib/db/todos";
 type UseTodoCardTasksParams = {
   todoId: number;
   initialTasks: TodoForDate["tasks"];
-  isListMenuModeActive: boolean;
+  interactionLocked: boolean;
 };
 
 export function useTodoCardTasks({
   todoId,
   initialTasks,
-  isListMenuModeActive,
+  interactionLocked,
 }: UseTodoCardTasksParams) {
   const [tasks, setTasks] = useState(initialTasks);
 
@@ -28,7 +28,7 @@ export function useTodoCardTasks({
   }, [completedCount, totalCount]);
 
   const handleToggleAllTasks = () => {
-    if (isListMenuModeActive) return;
+    if (interactionLocked) return;
 
     const nextDone = !isAllDone;
 
@@ -43,7 +43,7 @@ export function useTodoCardTasks({
   };
 
   const handleToggleTask = (taskId: number) => {
-    if (isListMenuModeActive) return;
+    if (interactionLocked) return;
 
     const targetTask = tasks.find((task) => task.id === taskId);
     if (!targetTask) return;
