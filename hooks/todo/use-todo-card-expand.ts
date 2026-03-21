@@ -3,9 +3,10 @@ import { Animated, LayoutChangeEvent } from "react-native";
 
 const DETAIL_MAX_HEIGHT = 250;
 
-export function useTodoCardExpand(isAnyMoveModeActive: boolean) {
+export function useTodoCardExpand(isListMenuModeActive: boolean) {
   const [expanded, setExpanded] = useState(false);
   const [measuredDetailHeight, setMeasuredDetailHeight] = useState(0);
+  const wasListMenuModeActiveRef = useRef(isListMenuModeActive);
 
   const detailHeightAnim = useRef(new Animated.Value(0)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
@@ -48,7 +49,7 @@ export function useTodoCardExpand(isAnyMoveModeActive: boolean) {
   }, [detailHeightAnim, opacityAnim]);
 
   const toggleExpand = () => {
-    if (isAnyMoveModeActive) return;
+    if (isListMenuModeActive) return;
 
     if (expanded) {
       animateClose();
@@ -76,11 +77,24 @@ export function useTodoCardExpand(isAnyMoveModeActive: boolean) {
   };
 
   useEffect(() => {
-    if (!isAnyMoveModeActive) return;
+    if (!isListMenuModeActive) return;
     if (!expanded) return;
 
     animateClose();
-  }, [isAnyMoveModeActive, expanded, animateClose]);
+  }, [isListMenuModeActive, expanded, animateClose]);
+
+  /** 리스트 메뉴 모드 종료 시 상세 애니메이션·상태를 접힌 상태로 고정 (중간 프레임/불일치로 내용이 안 보이는 현상 방지) */
+  useEffect(() => {
+    const was = wasListMenuModeActiveRef.current;
+    wasListMenuModeActiveRef.current = isListMenuModeActive;
+    if (!was || isListMenuModeActive) return;
+
+    detailHeightAnim.stopAnimation();
+    opacityAnim.stopAnimation();
+    detailHeightAnim.setValue(0);
+    opacityAnim.setValue(0);
+    setExpanded(false);
+  }, [detailHeightAnim, isListMenuModeActive, opacityAnim]);
 
   const detailAnimatedStyle = {
     height: detailHeightAnim,

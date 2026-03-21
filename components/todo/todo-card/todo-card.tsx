@@ -1,4 +1,5 @@
 import { type TodoForDate } from "@/lib/db/todos";
+import type { DateDetailListMenuMode } from "@/types/calendar-types";
 import React from "react";
 import { Animated, StyleSheet, View } from "react-native";
 
@@ -9,31 +10,28 @@ import { TodoCardHeader } from "./todo-card-header";
 
 type TodoCardProps = {
   todo: TodoForDate;
-  isMovingTodo?: boolean;
-  isMoveMode?: boolean;
-  canMoveUp?: boolean;
-  canMoveDown?: boolean;
-  onRequestDelete: (todo: TodoForDate) => void;
-  onActivateMoveMode: (todoId: number) => void;
-  onExitMoveMode: () => void;
-  onPressMoveUp: (todoId: number) => void;
-  onPressMoveDown: (todoId: number) => void;
+  /** 날짜 상세 모달 헤더 메뉴 모드(순서 변경·수정·삭제) — `none`이 아니면 펼침·태스크 토글 비활성, 헤더 탭으로 대상 선택 */
+  listMenuMode?: DateDetailListMenuMode;
+  /** 리스트 메뉴 모드에서 이 카드가 동작 대상으로 선택됨 */
+  isSelectedForListMode?: boolean;
+  /** 리스트 메뉴 모드에서 헤더(카드) 탭 — 부모가 단일/다중 선택 처리 */
+  onPressSelectInListMode?: (todoId: number) => void;
+  /** FAB 모드 진입·종료 애니메이션 중 — 카드·체크·태스크 터치 전부 무시 */
+  blockTodoInteraction?: boolean;
 };
 
 export function TodoCard({
   todo,
-  isMovingTodo = false,
-  isMoveMode = false,
-  canMoveUp = false,
-  canMoveDown = false,
-  onRequestDelete,
-  onActivateMoveMode,
-  onExitMoveMode,
-  onPressMoveUp,
-  onPressMoveDown,
+  listMenuMode = "none",
+  isSelectedForListMode = false,
+  onPressSelectInListMode,
+  blockTodoInteraction = false,
 }: TodoCardProps) {
-  const { expanded, toggleExpand, handleDetailLayout, detailAnimatedStyle } =
-    useTodoCardExpand(isMoveMode);
+  const isListMenuModeActive = listMenuMode !== "none";
+  const interactionLocked = isListMenuModeActive || blockTodoInteraction;
+
+  const { toggleExpand, handleDetailLayout, detailAnimatedStyle } =
+    useTodoCardExpand(interactionLocked);
 
   const {
     tasks,
@@ -45,40 +43,40 @@ export function TodoCard({
   } = useTodoCardTasks({
     todoId: todo.todoId,
     initialTasks: todo.tasks,
-    isMoveMode,
+    isListMenuModeActive: interactionLocked,
   });
 
   const handlePressCard = () => {
-    if (isMoveMode) return;
+    if (blockTodoInteraction) return;
+    if (isListMenuModeActive) {
+      onPressSelectInListMode?.(todo.todoId);
+      return;
+    }
     toggleExpand();
   };
 
-  const handlePressComplete = () => {
-    if (isMoveMode) {
-      onExitMoveMode?.();
-    }
-  };
-
   return (
-    <View style={[styles.wrapper, { backgroundColor: todo.categoryColor }]}>
+    <View
+      style={[
+        styles.wrapper,
+        { backgroundColor: todo.categoryColor },
+        {
+          borderColor:
+            isListMenuModeActive && isSelectedForListMode
+              ? "#2563EB"
+              : "transparent",
+        },
+      ]}
+    >
       <TodoCardHeader
         categoryColor={todo.categoryColor}
         categoryName={todo.categoryName}
         isAllDone={isAllDone}
         completedCount={completedCount}
         totalCount={totalCount}
-        expanded={expanded}
-        isMovingTodo={isMovingTodo}
-        isMoveMode={isMoveMode}
-        canMoveUp={canMoveUp}
-        canMoveDown={canMoveDown}
+        isListMenuModeActive={interactionLocked}
         onPressCard={handlePressCard}
         onPressToggleAll={handleToggleAllTasks}
-        onPressDelete={() => onRequestDelete(todo)}
-        onLongPressMove={() => onActivateMoveMode(todo.todoId)}
-        onPressMoveUp={() => onPressMoveUp(todo.todoId)}
-        onPressMoveDown={() => onPressMoveDown(todo.todoId)}
-        onPressComplete={handlePressComplete}
       />
 
       <Animated.View
@@ -96,10 +94,13 @@ export function TodoCard({
 }
 
 const styles = StyleSheet.create({
+  /** borderWidth 고정 → 모드 on/off 시 카드 크기 변하지 않음 (색만 변경) */
   wrapper: {
     width: "100%",
     borderRadius: 12,
     marginVertical: 6,
+    borderWidth: 2,
+    borderColor: "transparent",
     overflow: "hidden",
   },
   animatedDetailContainer: {

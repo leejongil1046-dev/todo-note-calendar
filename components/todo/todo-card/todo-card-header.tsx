@@ -1,7 +1,4 @@
 import Check from "@/assets/images/check.svg";
-import ChevronDown from "@/assets/images/chevron-down.svg";
-import ChevronUp from "@/assets/images/chevron-up.svg";
-import Delete from "@/assets/images/delete.svg";
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
@@ -13,18 +10,9 @@ type TodoCardHeaderProps = {
   isAllDone: boolean;
   completedCount: number;
   totalCount: number;
-  expanded: boolean;
-  isMovingTodo: boolean;
-  isMoveMode: boolean;
-  canMoveUp: boolean;
-  canMoveDown: boolean;
+  isListMenuModeActive?: boolean;
   onPressCard: () => void;
   onPressToggleAll: () => void;
-  onPressDelete: () => void;
-  onLongPressMove: () => void;
-  onPressMoveUp: () => void;
-  onPressMoveDown: () => void;
-  onPressComplete: () => void;
 };
 
 export function TodoCardHeader({
@@ -33,32 +21,21 @@ export function TodoCardHeader({
   isAllDone,
   completedCount,
   totalCount,
-  expanded,
-  isMovingTodo,
-  isMoveMode,
-  canMoveUp,
-  canMoveDown,
+  isListMenuModeActive = false,
   onPressCard,
   onPressToggleAll,
-  onPressDelete,
-  onLongPressMove,
-  onPressMoveUp,
-  onPressMoveDown,
-  onPressComplete,
 }: TodoCardHeaderProps) {
   return (
     <Pressable
       style={[styles.todoCard, { backgroundColor: categoryColor }]}
       onPress={onPressCard}
-      onLongPress={onLongPressMove}
-      delayLongPress={180}
     >
       <View style={styles.todoHeaderRow}>
         <View style={styles.todoLeft}>
           <Pressable
             style={styles.todoCheckboxWrapper}
             onPress={onPressToggleAll}
-            disabled={isMoveMode}
+            disabled={isListMenuModeActive}
           >
             <View style={styles.todoCheckbox}>
               {isAllDone && <Check width={19} height={19} />}
@@ -70,52 +47,9 @@ export function TodoCardHeader({
           </Text>
         </View>
 
-        {isMovingTodo ? (
-          <View style={styles.moveActions}>
-            <Pressable
-              style={[
-                styles.moveButton,
-                !canMoveUp && styles.moveButtonDisabled,
-              ]}
-              onPress={onPressMoveUp}
-              disabled={!canMoveUp}
-            >
-              <ChevronUp width={18} height={18} />
-            </Pressable>
-
-            <Pressable
-              style={[
-                styles.moveButton,
-                !canMoveDown && styles.moveButtonDisabled,
-              ]}
-              onPress={onPressMoveDown}
-              disabled={!canMoveDown}
-            >
-              <ChevronDown width={18} height={18} />
-            </Pressable>
-
-            <Pressable
-              style={[styles.completeButton]}
-              onPress={onPressComplete}
-            >
-              <Text style={[styles.completeButtonText]}>완료</Text>
-            </Pressable>
-          </View>
-        ) : !expanded ? (
-          <Text style={styles.todoCountText}>
-            {completedCount} / {totalCount}
-          </Text>
-        ) : (
-          <View>
-            <Pressable
-              style={styles.todoDeleteButton}
-              onPress={onPressDelete}
-              disabled={isMoveMode}
-            >
-              <Delete width={18} height={18} />
-            </Pressable>
-          </View>
-        )}
+        <Text style={styles.todoCountText}>
+          {completedCount} / {totalCount}
+        </Text>
       </View>
     </Pressable>
   );
@@ -172,50 +106,5 @@ const styles = StyleSheet.create({
     color: "#6B7280",
     paddingBottom: 1,
     marginRight: 20,
-  },
-  todoDeleteButton: {
-    width: 30,
-    height: 30,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 10,
-  },
-  moveActions: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginRight: 12,
-    gap: 6,
-  },
-  moveButton: {
-    width: 30,
-    height: 30,
-    paddingHorizontal: 8,
-    borderRadius: 8,
-    backgroundColor: "#FFFFFF",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  moveButtonDisabled: {
-    backgroundColor: "#F3F4F6",
-  },
-  moveButtonText: {
-    fontSize: 12,
-    fontWeight: "700",
-    color: "#111827",
-  },
-  completeButton: {
-    minWidth: 36,
-    height: 26,
-    paddingHorizontal: 8,
-    borderRadius: 8,
-    backgroundColor: "#FFFFFF",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  completeButtonText: {
-    fontSize: 12,
-    fontWeight: "700",
-    color: "#111827",
   },
 });

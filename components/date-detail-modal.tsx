@@ -1,15 +1,36 @@
+import DeleteFabIcon from "@/assets/images/delete.svg";
+import EditFabIcon from "@/assets/images/edit.svg";
 import Plus from "@/assets/images/plus.svg";
 import { ConfirmModal } from "@/components/common/confirm-modal";
+import {
+  DateDetailModalListHeader,
+  type DateDetailHeaderMenuItem,
+} from "@/components/date-detail-modal-list-header";
 import { TodoCard } from "@/components/todo/todo-card/todo-card";
 import { TodoCreateModal } from "@/components/todo/todo-create/todo-create-modal";
+import { useDateDetailFabCluster } from "@/hooks/todo/use-date-detail-fab-cluster";
 import { useTodoCreate } from "@/hooks/todo/use-todo-create";
 import { useTodoDelete } from "@/hooks/todo/use-todo-delete";
-import { useTodoMoveMode } from "@/hooks/todo/use-todo-move-mode";
 import { db } from "@/lib/db/db";
-import { getTodosForDate, type TodoForDate } from "@/lib/db/todos";
-import type { DateMeta, TodoSummary } from "@/types/calendar-types";
+import {
+  getTodosForDate,
+  updateTodoOrdersAsync,
+  type TodoForDate,
+} from "@/lib/db/todos";
+import type {
+  DateDetailListMenuMode,
+  DateMeta,
+  TodoSummary,
+} from "@/types/calendar-types";
+import Feather from "@expo/vector-icons/Feather";
 import { Text } from "@react-navigation/elements";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   Animated,
   FlatList,
@@ -21,6 +42,8 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+export { DEFAULT_DATE_DETAIL_HEADER_MENU_ITEMS } from "@/components/date-detail-modal-list-header";
+export type { DateDetailHeaderMenuItem } from "@/components/date-detail-modal-list-header";
 
 type Rect = {
   x: number;
@@ -62,6 +85,35 @@ export function DateDetailModal({
 }: DateDetailModalProps) {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [todos, setTodos] = useState<TodoForDate[]>([]);
+  const todosRef = useRef<TodoForDate[]>([]);
+  todosRef.current = todos;
+  const [headerMenuOpen, setHeaderMenuOpen] = useState(false);
+  const [listMenuMode, setListMenuMode] =
+    useState<DateDetailListMenuMode>("none");
+  /** 순서 변경·수정: 단일 선택 */
+  const [singleSelectedTodoId, setSingleSelectedTodoId] = useState<
+    number | null
+  >(null);
+  /** 삭제: 다중 선택 */
+  const [deleteSelectedTodoIds, setDeleteSelectedTodoIds] = useState<number[]>(
+    [],
+  );
+
+  const {
+    fabRotate,
+    upTranslateY,
+    downTranslateY,
+    actionTranslateY,
+    reorderChevronsMounted,
+    actionSubFabMounted,
+    enterReorderMode,
+    exitReorderMode,
+    cancelRotationOnlyEnter,
+    enterActionSubFabMode,
+    exitActionSubFabMode,
+    resetInstant,
+    isFabClusterAnimating,
+  } = useDateDetailFabCluster();
 
   const dateString = meta?.dateString;
 
@@ -95,21 +147,6 @@ export function DateDetailModal({
     closeCreateModal: () => setIsCreateModalOpen(false),
   });
 
-  const {
-    activeMoveTodoId,
-    isMoveMode,
-    handleActivateMoveMode,
-    handleExitMoveMode,
-    handleMoveTodoUp,
-    handleMoveTodoDown,
-  } = useTodoMoveMode({
-    todos,
-    setTodos,
-    visible,
-    dateString,
-    onTodoSummaryChanged,
-  });
-
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
   const insets = useSafeAreaInsets();
 
@@ -119,37 +156,191 @@ export function DateDetailModal({
   const finalTop = topOffset + 52;
   const finalHeight = screenHeight - topOffset - bottomOffset - 52 - 82 - 30;
 
-  const handlePressAdd = useCallback(() => {
-    if (isMoveMode) {
-      handleExitMoveMode();
-      setIsCreateModalOpen(true);
+  const isListMenuModeActive = listMenuMode !== "none";
+
+  const clearListModeSelections = useCallback(() => {
+    setSingleSelectedTodoId(null);
+    setDeleteSelectedTodoIds([]);
+  }, []);
+
+  useEffect(() => {
+    clearListModeSelections();
+  }, [clearListModeSelections, listMenuMode]);
+
+  /** 순서 변경: 선택된 할 일을 리스트에서 한 칸 위/아래로 (DB sort_order 반영) */
+  const moveSelectedTodoInReorder = useCallback(
+    (direction: "up" | "down") => {
+      if (
+        listMenuMode !== "reorder" ||
+        singleSelectedTodoId == null ||
+        !dateString
+      ) {
+        return;
+      }
+
+      const prevTodos = todosRef.current;
+      const idx = prevTodos.findIndex((t) => t.todoId === singleSelectedTodoId);
+      if (idx === -1) return;
+
+      const nextIdx = direction === "up" ? idx - 1 : idx + 1;
+      if (nextIdx < 0 || nextIdx >= prevTodos.length) return;
+
+      const nextTodos = [...prevTodos];
+      [nextTodos[idx], nextTodos[nextIdx]] = [
+        nextTodos[nextIdx],
+        nextTodos[idx],
+      ];
+
+      todosRef.current = nextTodos;
+      setTodos(nextTodos);
+      onTodoSummaryChanged(dateString, buildTodoSummaryFromTodos(nextTodos));
+      void updateTodoOrdersAsync(
+        db,
+        nextTodos.map((t) => t.todoId),
+      );
+    },
+    [dateString, listMenuMode, onTodoSummaryChanged, singleSelectedTodoId],
+  );
+
+  const handleTodoListModePress = useCallback(
+    (todoId: number) => {
+      if (listMenuMode === "delete") {
+        setDeleteSelectedTodoIds((prev) =>
+          prev.includes(todoId)
+            ? prev.filter((id) => id !== todoId)
+            : [...prev, todoId],
+        );
+        return;
+      }
+      if (listMenuMode === "reorder" || listMenuMode === "edit") {
+        setSingleSelectedTodoId((prev) => (prev === todoId ? null : todoId));
+      }
+    },
+    [listMenuMode],
+  );
+
+  const openListMenuMode = useCallback(
+    (mode: Exclude<DateDetailListMenuMode, "none">) => {
+      setHeaderMenuOpen(false);
+      setListMenuMode(mode);
+      if (mode === "reorder") {
+        enterReorderMode();
+      } else {
+        enterActionSubFabMode();
+      }
+    },
+    [enterActionSubFabMode, enterReorderMode],
+  );
+
+  const headerMenuItems = useMemo<DateDetailHeaderMenuItem[]>(
+    () => [
+      {
+        label: "순서 변경",
+        onPress: () => openListMenuMode("reorder"),
+      },
+      {
+        label: "수정",
+        onPress: () => openListMenuMode("edit"),
+      },
+      {
+        label: "삭제",
+        onPress: () => openListMenuMode("delete"),
+      },
+    ],
+    [openListMenuMode],
+  );
+
+  const handleFabPress = useCallback(() => {
+    if (listMenuMode === "reorder") {
+      clearListModeSelections();
+      if (reorderChevronsMounted) {
+        exitReorderMode(() => setListMenuMode("none"));
+      } else {
+        cancelRotationOnlyEnter(() => setListMenuMode("none"));
+      }
+      return;
+    }
+
+    if (listMenuMode === "edit" || listMenuMode === "delete") {
+      clearListModeSelections();
+      if (actionSubFabMounted) {
+        exitActionSubFabMode(() => setListMenuMode("none"));
+      } else {
+        cancelRotationOnlyEnter(() => setListMenuMode("none"));
+      }
+      return;
     }
 
     setIsCreateModalOpen(true);
-  }, [handleExitMoveMode, isMoveMode]);
+  }, [
+    actionSubFabMounted,
+    cancelRotationOnlyEnter,
+    clearListModeSelections,
+    exitActionSubFabMode,
+    exitReorderMode,
+    listMenuMode,
+    reorderChevronsMounted,
+  ]);
 
   useEffect(() => {
     if (!visible || !dateString) return;
     refreshTodos();
   }, [visible, dateString, refreshTodos]);
 
-  const renderListHeader = useMemo(() => {
+  useEffect(() => {
+    if (!visible) {
+      setHeaderMenuOpen(false);
+      setListMenuMode("none");
+      clearListModeSelections();
+      resetInstant();
+    }
+  }, [clearListModeSelections, resetInstant, visible]);
+
+  useEffect(() => {
+    if (isListMenuModeActive) setHeaderMenuOpen(false);
+  }, [isListMenuModeActive]);
+
+  const renderListHeader = useCallback(() => {
     if (!meta) return null;
 
     return (
-      <View>
-        <Text style={styles.dateText}>
-          {meta.year}년 {meta.month}월 {meta.day}일 ({meta.weekdayLabel})
-        </Text>
-
-        {meta.isHoliday && meta.holidayName && (
-          <View style={styles.holidayCard}>
-            <Text style={styles.holidayText}>{meta.holidayName}</Text>
-          </View>
-        )}
-      </View>
+      <DateDetailModalListHeader
+        meta={meta}
+        menuOpen={headerMenuOpen}
+        onMenuOpenChange={setHeaderMenuOpen}
+        menuItems={headerMenuItems}
+        menuDisabled={isListMenuModeActive}
+      />
     );
-  }, [meta]);
+  }, [meta, headerMenuOpen, headerMenuItems, isListMenuModeActive]);
+
+  const flatListExtraData = useMemo(
+    () =>
+      `${listMenuMode}-${singleSelectedTodoId}-${deleteSelectedTodoIds.join(",")}-${isFabClusterAnimating}`,
+    [
+      deleteSelectedTodoIds,
+      isFabClusterAnimating,
+      listMenuMode,
+      singleSelectedTodoId,
+    ],
+  );
+
+  const reorderChevronMoveDisabled = useMemo(() => {
+    if (listMenuMode !== "reorder") {
+      return { up: true, down: true };
+    }
+    if (singleSelectedTodoId == null || todos.length === 0) {
+      return { up: true, down: true };
+    }
+    const idx = todos.findIndex((t) => t.todoId === singleSelectedTodoId);
+    if (idx === -1) {
+      return { up: true, down: true };
+    }
+    return {
+      up: idx <= 0,
+      down: idx >= todos.length - 1,
+    };
+  }, [listMenuMode, singleSelectedTodoId, todos]);
 
   if (!visible || !rect || !meta) return null;
 
@@ -199,10 +390,13 @@ export function DateDetailModal({
                 >
                   <FlatList
                     data={todos}
+                    extraData={flatListExtraData}
                     keyExtractor={(item) => String(item.todoId)}
                     showsVerticalScrollIndicator={false}
                     contentContainerStyle={styles.listContent}
                     ListHeaderComponent={renderListHeader}
+                    ListHeaderComponentStyle={styles.flatListHeaderWrapper}
+                    onScrollBeginDrag={() => setHeaderMenuOpen(false)}
                     ListEmptyComponent={
                       <Text style={styles.emptyTodosText}>
                         아직 할 일이 없어요
@@ -211,29 +405,143 @@ export function DateDetailModal({
                     renderItem={({ item, index }) => (
                       <TodoCard
                         todo={item}
-                        isMovingTodo={activeMoveTodoId === item.todoId}
-                        isMoveMode={isMoveMode}
-                        canMoveUp={index > 0}
-                        canMoveDown={index < todos.length - 1}
-                        onRequestDelete={handleRequestDeleteTodo}
-                        onActivateMoveMode={handleActivateMoveMode}
-                        onExitMoveMode={handleExitMoveMode}
-                        onPressMoveUp={handleMoveTodoUp}
-                        onPressMoveDown={handleMoveTodoDown}
+                        listMenuMode={listMenuMode}
+                        isSelectedForListMode={
+                          listMenuMode === "delete"
+                            ? deleteSelectedTodoIds.includes(item.todoId)
+                            : listMenuMode === "reorder" ||
+                                listMenuMode === "edit"
+                              ? singleSelectedTodoId === item.todoId
+                              : false
+                        }
+                        onPressSelectInListMode={handleTodoListModePress}
+                        blockTodoInteraction={isFabClusterAnimating}
                       />
                     )}
                   />
                 </Animated.View>
 
                 <Animated.View
-                  style={[styles.floatingButton, { opacity: contentOpacity }]}
+                  style={[styles.fabCluster, { opacity: contentOpacity }]}
+                  pointerEvents="box-none"
                 >
-                  <Pressable
-                    style={styles.floatingButtonPressable}
-                    onPress={handlePressAdd}
-                  >
-                    <Plus width={50} height={50} />
-                  </Pressable>
+                  {/* column-reverse: 선언 순서대로 아래→위 = FAB, 아래 chevron, 위 chevron */}
+                  <Animated.View style={styles.floatingButton}>
+                    <Pressable
+                      style={styles.floatingButtonPressable}
+                      onPress={handleFabPress}
+                    >
+                      <Animated.View
+                        style={{
+                          transform: [{ rotate: fabRotate }],
+                        }}
+                      >
+                        <Plus width={50} height={50} />
+                      </Animated.View>
+                    </Pressable>
+                  </Animated.View>
+
+                  {reorderChevronsMounted && (
+                    <Animated.View
+                      style={[
+                        styles.subFab,
+                        styles.subFabSpacing,
+                        reorderChevronMoveDisabled.down &&
+                          styles.reorderSubFabDisabled,
+                        { transform: [{ translateY: downTranslateY }] },
+                      ]}
+                    >
+                      <Pressable
+                        disabled={reorderChevronMoveDisabled.down}
+                        style={[
+                          styles.floatingButtonPressable,
+                          reorderChevronMoveDisabled.down &&
+                            styles.reorderChevronPressableDisabled,
+                        ]}
+                        onPress={() => moveSelectedTodoInReorder("down")}
+                      >
+                        <Feather
+                          name="chevron-down"
+                          size={28}
+                          color={
+                            reorderChevronMoveDisabled.down
+                              ? "#9CA3AF"
+                              : "#000000"
+                          }
+                        />
+                      </Pressable>
+                    </Animated.View>
+                  )}
+
+                  {reorderChevronsMounted && (
+                    <Animated.View
+                      style={[
+                        styles.subFab,
+                        styles.subFabSpacing,
+                        reorderChevronMoveDisabled.up &&
+                          styles.reorderSubFabDisabled,
+                        { transform: [{ translateY: upTranslateY }] },
+                      ]}
+                    >
+                      <Pressable
+                        disabled={reorderChevronMoveDisabled.up}
+                        style={[
+                          styles.floatingButtonPressable,
+                          reorderChevronMoveDisabled.up &&
+                            styles.reorderChevronPressableDisabled,
+                        ]}
+                        onPress={() => moveSelectedTodoInReorder("up")}
+                      >
+                        <Feather
+                          name="chevron-up"
+                          size={28}
+                          color={
+                            reorderChevronMoveDisabled.up
+                              ? "#9CA3AF"
+                              : "#000000"
+                          }
+                        />
+                      </Pressable>
+                    </Animated.View>
+                  )}
+
+                  {listMenuMode === "edit" && actionSubFabMounted && (
+                    <Animated.View
+                      style={[
+                        styles.subFab,
+                        styles.subFabSpacing,
+                        { transform: [{ translateY: actionTranslateY }] },
+                      ]}
+                    >
+                      <Pressable
+                        style={styles.floatingButtonPressable}
+                        onPress={() => {
+                          /* TODO: 선택된 할 일 수정 */
+                        }}
+                      >
+                        <EditFabIcon width={28} height={28} />
+                      </Pressable>
+                    </Animated.View>
+                  )}
+
+                  {listMenuMode === "delete" && actionSubFabMounted && (
+                    <Animated.View
+                      style={[
+                        styles.subFab,
+                        styles.subFabSpacing,
+                        { transform: [{ translateY: actionTranslateY }] },
+                      ]}
+                    >
+                      <Pressable
+                        style={styles.floatingButtonPressable}
+                        onPress={() => {
+                          /* TODO: 선택된 할 일 삭제 */
+                        }}
+                      >
+                        <DeleteFabIcon width={28} height={28} />
+                      </Pressable>
+                    </Animated.View>
+                  )}
                 </Animated.View>
               </>
             )}
@@ -295,28 +603,13 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 30,
   },
-  dateText: {
-    fontSize: 16,
-    fontWeight: "700",
-    marginBottom: 16,
-    marginLeft: 3,
+  /** 헤더(드롭다운)가 리스트 셀보다 위에 그려지도록 VirtualizedList 쪽에도 지정 */
+  flatListHeaderWrapper: {
+    zIndex: 100,
+    elevation: 24,
   },
   listContent: {
     paddingBottom: 90,
-  },
-  holidayCard: {
-    width: "100%",
-    height: 50,
-    borderRadius: 12,
-    paddingVertical: 15,
-    paddingHorizontal: 20,
-    backgroundColor: "#FEECEC",
-    marginVertical: 6,
-  },
-  holidayText: {
-    fontSize: 13,
-    fontWeight: "500",
-    color: "#DC2626",
   },
   emptyTodosText: {
     marginTop: 14,
@@ -324,21 +617,51 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#6B7280",
   },
-  floatingButton: {
+  fabCluster: {
     position: "absolute",
     bottom: 20,
     right: 20,
+    flexDirection: "column-reverse",
+    alignItems: "center",
+  },
+  floatingButton: {
     width: 50,
     height: 50,
     borderRadius: 25,
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#FFFFFF",
+    zIndex: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    elevation: 10,
+  },
+  subFab: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    zIndex: 5,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.2,
     shadowRadius: 10,
     elevation: 5,
+  },
+  subFabSpacing: {
+    marginBottom: 12,
+  },
+  reorderSubFabDisabled: {
+    backgroundColor: "#F3F4F6",
+    shadowOpacity: 0.08,
+    elevation: 2,
+  },
+  reorderChevronPressableDisabled: {
+    opacity: 0.65,
   },
   floatingButtonPressable: {
     width: "100%",

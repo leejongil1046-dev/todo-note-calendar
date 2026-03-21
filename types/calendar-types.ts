@@ -23,6 +23,9 @@ export type TodoSummary = {
 
 export type TodoSummaryByDate = Record<string, TodoSummary>;
 
+/** 날짜 상세 모달 헤더 메뉴(순서 변경 / 수정 / 삭제) 활성 모드 */
+export type DateDetailListMenuMode = "none" | "reorder" | "edit" | "delete";
+
 export type DateMeta = {
   dateString: string; // "YYYY-MM-DD"
   year: number;
