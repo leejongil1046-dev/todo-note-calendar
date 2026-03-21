@@ -55,9 +55,9 @@ export const Calendar = ({
     const threshold = 40;
 
     if (translationX > threshold) {
-      onSwipeNextMonth();
-    } else if (translationX < -threshold) {
       onSwipePrevMonth();
+    } else if (translationX < -threshold) {
+      onSwipeNextMonth();
     }
   };
 

@@ -38,25 +38,6 @@ export function useDateDetailModal() {
       detailProgress.setValue(0);
       contentOpacity.setValue(0);
 
-      // Animated.timing(detailProgress, {
-      //   toValue: 1,
-      //   duration: 250,
-      //   easing: Easing.out(Easing.ease),
-      //   useNativeDriver: false,
-      // }).start();
-
-      // mountTimerRef.current = setTimeout(() => {
-      //   setIsCardContentMounted(true);
-
-      //   Animated.timing(contentOpacity, {
-      //     toValue: 1,
-      //     duration: 200,
-      //     easing: Easing.out(Easing.ease),
-      //     useNativeDriver: true,
-      //   }).start();
-
-      //   mountTimerRef.current = null;
-      // }, 300);
       Animated.timing(detailProgress, {
         toValue: 1,
         duration: 250,
